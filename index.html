@@ -49,7 +49,7 @@
             <h1 class="text-2xl sm:text-3xl font-black tracking-wide flex flex-col items-center justify-center gap-1">
                 <span>🎫 จำลองการซื้อสลากกินแบ่งฯ vs ลงทุนใน S&P 500 (VOO) 💰</span>
             </h1>
-            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เทียบค่าซื้อหวย ให้เป็นเงินลงทุน by Jake the Red Dog</p>
+            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เทียบ "ค่าหวย" ให้เป็น "เงินลงทุน" by Jake the Red Dog @lottery_kitchen</p>
         </div>
 
         <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด -->
@@ -334,7 +334,7 @@
         
         // สถิติผลตอบแทนรายปี S&P 500 (2014-2025)
         const SP500_HISTORICAL_ANNUAL = [0.136, 0.014, 0.120, 0.218, -0.044, 0.315, 0.184, 0.287, -0.181, 0.263, 0.242, 0.155];
-        let investment = { draws: 0, principal: 0, value: 0, netVoo: 0 }; 
+        let investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 }; 
 
         const container = document.getElementById('digitInputsContainer');
         const addTicketBtn = document.getElementById('addTicketBtn');
@@ -352,7 +352,7 @@
             if(!confirm("คุณต้องการล้างข้อมูลและเริ่มเกมใหม่ตั้งแต่ศูนย์ใช่หรือไม่?")) return;
             
             stats = { totalTickets: 0, totalWinningTickets: 0, totalSpent: 0, totalWon: 0, netLottery: 0 };
-            investment = { draws: 0, principal: 0, value: 0, netVoo: 0 };
+            investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 };
             userTickets = [];
             
             renderCart();
@@ -724,17 +724,21 @@
             }, 100); 
         };
 
-        // ฟังก์ชันช่วยประเมินมูลค่าเป็นสิ่งของ
+        // ฟังก์ชันช่วยประเมินมูลค่าเป็นสิ่งของที่หลากหลายขึ้น
         function getItemEquivalent(amount) {
             if (amount <= 0) return "ความว่างเปล่า 💸";
-            if (amount < 10000) return `ชาบู/ปิ้งย่าง ประมาณ ${Math.floor(amount/500)} มื้อ 🍲`;
-            if (amount < 40000) return `สมาร์ทโฟนหรือทองคำสัก ${Math.floor(amount/40000 * 10) / 10} บาท 📱`;
-            if (amount < 100000) return `มอเตอร์ไซค์คันใหม่ 🛵`;
-            if (amount < 500000) return `ดาวน์รถยนต์สบายๆ 🚗`;
-            if (amount < 1000000) return `รถยนต์ ECO Car ป้ายแดงเงินสด 🚘`;
-            if (amount < 3000000) return `เงินดาวน์บ้านเดี่ยว / คอนโด 🏠`;
-            if (amount < 5000000) return `ทุนการศึกษาลูกจนจบปริญญา 🎓`;
-            return `เกษียณล่วงหน้าได้สบายๆ! (อิสรภาพทางการเงิน) 🏖️`;
+            if (amount < 500) return `กาแฟแบรนด์ดังประมาณ ${Math.floor(amount/150)} แก้ว ☕`;
+            if (amount < 2000) return `ชาบู/ปิ้งย่างมื้อจัดเต็ม ${Math.floor(amount/500)} มื้อ 🍲 หรือ สุกี้หมาล่า ${Math.floor(amount/300)} รอบ`;
+            if (amount < 10000) return `ค่าไฟ/ค่าน้ำ ประมาณ ${Math.floor(amount/1500)} เดือน ⚡ หรือ ตั๋วบินเที่ยวในประเทศ ${Math.floor(amount/2500)} เที่ยว ✈️`;
+            if (amount < 25000) return `เครื่องเกมคอนโซล (PS5/Switch) 🎮 หรือ ทองคำ ${Math.floor(amount/40000 * 4)} สลึง 🥇`;
+            if (amount < 50000) return `สมาร์ทโฟนรุ่นเรือธง (ตัวท็อป) 📱 หรือ ทริปเที่ยวญี่ปุ่นฟินๆ 🌸`;
+            if (amount < 100000) return `มอเตอร์ไซค์คันใหม่ 🛵 หรือ กระเป๋าแบรนด์เนมหรู 👜`;
+            if (amount < 300000) return `เงินดาวน์รถยนต์สบายๆ 🚗 หรือ ทริปเที่ยวยุโรป 🏰`;
+            if (amount < 800000) return `รถยนต์ ECO Car เงินสด 🚘 หรือ ทุนจัดงานแต่งงานในฝัน 💍`;
+            if (amount < 2000000) return `ดาวน์บ้านเดี่ยว/คอนโดทำเลทอง 🏠 หรือ ทุนเรียนต่อ ป.โท ต่างประเทศ 🎓`;
+            if (amount < 5000000) return `ซื้อบ้าน/คอนโดด้วยเงินสด 🏢 หรือ พอร์ตหุ้นปันผลกินใช้เดือนละหมื่น 📈`;
+            if (amount < 10000000) return `อิสรภาพทางการเงินเบื้องต้น (กินปันผลเดือนละ 3-4 หมื่นยาวๆ) 🏖️`;
+            return `ระดับเศรษฐี! ซื้อซูเปอร์คาร์ หรือเกษียณล่วงหน้าแบบหรูหราชาตินี้ไม่ต้องทำงานแล้ว 👑`;
         }
 
         // ฟังก์ชันช่วยประเมินมูลค่าเป็นเวลาทำงาน
