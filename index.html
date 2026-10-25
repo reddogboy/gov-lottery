@@ -67,7 +67,7 @@
                     </button>
                 </div>
                 <div class="text-[10px] text-gray-500 bg-gray-200 px-2 py-1 rounded-md text-center leading-tight">
-                    อิงผลตอบแทน S&P 500 ปี 2014-2025<br>
+                    อิงสถิติผลตอบแทน S&P 500 (ปี 2014-2025)<br>
                     <span class="text-[9px] text-gray-400">*1 เดือน = 2 งวด (วันที่ 1 และ 16)</span>
                 </div>
             </div>
@@ -250,6 +250,29 @@
                 </div>
             </div>
 
+            <!-- ปุ่มดูรางวัลอื่นๆ -->
+            <button id="toggleOtherPrizesBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                ดูรางวัลที่ 2, 3, 4, 5
+            </button>
+            <div id="otherPrizesContainer" class="hidden mt-4 text-xs sm:text-sm">
+                <div class="mb-3">
+                    <strong class="text-gray-700">รางวัลที่ 2 (5 รางวัล):</strong>
+                    <div id="res-prize2" class="text-gray-600 break-words tracking-widest leading-relaxed"></div>
+                </div>
+                <div class="mb-3">
+                    <strong class="text-gray-700">รางวัลที่ 3 (10 รางวัล):</strong>
+                    <div id="res-prize3" class="text-gray-600 break-words tracking-widest leading-relaxed"></div>
+                </div>
+                <div class="mb-3">
+                    <strong class="text-gray-700">รางวัลที่ 4 (50 รางวัล):</strong>
+                    <div id="res-prize4" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs"></div>
+                </div>
+                <div>
+                    <strong class="text-gray-700">รางวัลที่ 5 (100 รางวัล):</strong>
+                    <div id="res-prize5" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs h-32 overflow-y-auto bg-gray-100 p-2 rounded border"></div>
+                </div>
+            </div>
+
             <button id="playAgainBtn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base transform hover:scale-[1.02]">
                 เริ่มซื้อและเล่นรอบถัดไป
             </button>
@@ -297,7 +320,7 @@
         
         // สถิติผลตอบแทนรายปี S&P 500 (2014-2025)
         const SP500_HISTORICAL_ANNUAL = [0.136, 0.014, 0.120, 0.218, -0.044, 0.315, 0.184, 0.287, -0.181, 0.263, 0.242, 0.155];
-        let investment = { draws: 0, principal: 0, value: 0, netVoo: 0 }; 
+        let investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 }; 
 
         const container = document.getElementById('digitInputsContainer');
         const addTicketBtn = document.getElementById('addTicketBtn');
@@ -316,7 +339,7 @@
             
             // เคลียร์ข้อมูลทั้งหมด
             stats = { totalTickets: 0, totalWinningTickets: 0, totalSpent: 0, totalWon: 0, netLottery: 0 };
-            investment = { draws: 0, principal: 0, value: 0, netVoo: 0 };
+            investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 };
             userTickets = [];
             
             // อัปเดต UI 
@@ -364,7 +387,7 @@
                 input.id = `digit-input-${i}`;
                 
                 const unlockedInputClass = 'border-gray-300 bg-white text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200';
-                const lockedInputClass = 'border-red-400 bg-red-50 text-red-700 shadow-inner';
+                const lockedInputClass = 'border-red-400 bg-red-100 text-red-700 shadow-inner';
                 input.className = `w-full h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-lg focus:outline-none transition-all duration-200 ${isLocked ? lockedInputClass : unlockedInputClass}`;
                 input.value = Math.floor(Math.random() * 10);
                 
@@ -375,7 +398,7 @@
                 const unlockedBtnClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
                 const lockedBtnClass = 'bg-red-600 text-white border-red-700 shadow-md transform scale-[1.02]';
                 lockBtn.className = `w-full text-[10px] sm:text-xs py-1.5 px-0.5 rounded-md transition-all duration-200 font-bold flex items-center justify-center gap-1 border ${isLocked ? lockedBtnClass : unlockedBtnClass}`;
-                lockBtn.innerHTML = isLocked ? '🔒 ล็อค' : 'กดเพื่อล็อค';
+                lockBtn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : 'กดเพื่อล็อค';
                 lockBtn.onclick = () => toggleLock(i, lockBtn);
 
                 col.appendChild(input);
@@ -405,10 +428,10 @@
             const unlockedBtnClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
             const lockedBtnClass = 'bg-red-600 text-white border-red-700 shadow-md transform scale-[1.02]';
             btn.className = `w-full text-[10px] sm:text-xs py-1.5 px-0.5 rounded-md transition-all duration-200 font-bold flex items-center justify-center gap-1 border ${isLocked ? lockedBtnClass : unlockedBtnClass}`;
-            btn.innerHTML = isLocked ? '🔒 ล็อค' : 'กดเพื่อล็อค';
+            btn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : 'กดเพื่อล็อค';
 
             const unlockedInputClass = 'border-gray-300 bg-white text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200';
-            const lockedInputClass = 'border-red-400 bg-red-50 text-red-700 shadow-inner';
+            const lockedInputClass = 'border-red-400 bg-red-100 text-red-700 shadow-inner';
             input.className = `w-full h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-lg focus:outline-none transition-all duration-200 ${isLocked ? lockedInputClass : unlockedInputClass}`;
         }
 
@@ -511,14 +534,21 @@
             investment.draws += 1;
             investment.principal += cost;
             
-            // 24 draws = 1 year. We loop through SP500 array.
-            let yearIndex = Math.floor((investment.draws - 1) / 24) % SP500_HISTORICAL_ANNUAL.length;
-            let annualReturn = SP500_HISTORICAL_ANNUAL[yearIndex];
-            
-            // คำนวณดอกเบี้ยทบต้นแบบรายครึ่งเดือน (Bi-weekly CAGR)
-            let trueBiWeeklyReturn = Math.pow(1 + annualReturn, 1/24) - 1;
+            // ทุกๆ 24 งวด (1 ปี) หรือรอบแรกสุด ให้สุ่มผลตอบแทนของปีนั้น
+            if (investment.draws === 1 || (investment.draws - 1) % 24 === 0) {
+                // สุ่มเลือก 1 ปีจากประวัติศาสตร์ (Monte Carlo Simulation)
+                let randomYearIdx = Math.floor(Math.random() * SP500_HISTORICAL_ANNUAL.length);
+                let annualReturn = SP500_HISTORICAL_ANNUAL[randomYearIdx];
+                
+                // เพิ่ม Noise ความผันผวนแบบสุ่มอีก ±3% เพื่อไม่ให้ซ้ำเดิมเป๊ะๆ
+                let noise = (Math.random() - 0.5) * 0.06; 
+                annualReturn += noise;
 
-            investment.value = (investment.value + cost) * (1 + trueBiWeeklyReturn);
+                // คำนวณดอกเบี้ยทบต้นแบบรายงวด (Bi-weekly CAGR) สำหรับปีนี้
+                investment.currentBiWeeklyReturn = Math.pow(1 + annualReturn, 1/24) - 1;
+            }
+
+            investment.value = (investment.value + cost) * (1 + investment.currentBiWeeklyReturn);
             investment.netVoo = investment.value - investment.principal;
         }
 
@@ -816,14 +846,36 @@
             timeSkipResultsSection.classList.add('hidden'); // ปิดหน้าข้ามเวลา
             resultsSection.classList.remove('hidden'); // เปิดหน้ารายงวด
             
+            // ดูรางวัลย่อยได้ด้วย
+            const toggleBtn = document.getElementById('toggleOtherPrizesBtn');
+            const otherPrizes = document.getElementById('otherPrizesContainer');
+            if(toggleBtn) {
+                toggleBtn.onclick = () => {
+                    if (otherPrizes.classList.contains('hidden')) {
+                        otherPrizes.classList.remove('hidden');
+                        toggleBtn.innerText = 'ซ่อนรางวัลอื่นๆ';
+                    } else {
+                        otherPrizes.classList.add('hidden');
+                        toggleBtn.innerText = 'ดูรางวัลที่ 2, 3, 4, 5';
+                    }
+                }
+            }
+            
             document.getElementById('res-prize1').innerText = drawResults.prize1[0];
             document.getElementById('res-prize1adj').innerText = drawResults.prize1adj.join(' , ');
             document.getElementById('res-front3').innerText = drawResults.front3.join(' , ');
             document.getElementById('res-back3').innerText = drawResults.back3.join(' , ');
             document.getElementById('res-back2').innerText = drawResults.back2[0];
             
+            document.getElementById('res-prize2').innerText = drawResults.prize2.join('   ');
+            document.getElementById('res-prize3').innerText = drawResults.prize3.join('   ');
+            document.getElementById('res-prize4').innerText = drawResults.prize4.join('   ');
+            document.getElementById('res-prize5').innerText = drawResults.prize5.join('   ');
+            
             document.getElementById('playAgainBtn').onclick = () => {
                 resultsSection.classList.add('hidden');
+                if(otherPrizes) otherPrizes.classList.add('hidden');
+                if(toggleBtn) toggleBtn.innerText = 'ดูรางวัลที่ 2, 3, 4, 5';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
