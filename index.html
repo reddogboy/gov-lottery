@@ -49,7 +49,7 @@
             <h1 class="text-2xl sm:text-3xl font-black tracking-wide flex flex-col items-center justify-center gap-1">
                 <span>🎫 จำลองการซื้อสลากกินแบ่งฯ vs ลงทุนใน S&P 500 (VOO) 💰</span>
             </h1>
-            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เทียบค่าซื้อหวยเป็นเงินลงทุน by Jake the Red Dog</p>
+            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เทียบค่าซื้อหวย ให้เป็นเงินลงทุน by Jake the Red Dog</p>
         </div>
 
         <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด -->
@@ -76,7 +76,7 @@
             <div class="mb-4 px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs sm:text-sm text-blue-800 shadow-sm flex items-start gap-2">
                 <span class="text-base sm:text-lg">💡</span>
                 <p class="leading-relaxed">
-                    <strong>กติกาการเปรียบเทียบ:</strong> ทุกครั้งที่คุณจ่ายเงินซื้อสลาก ระบบจะนำ <b>"เงินค่าหวย"</b> งวดนั้น ไปจำลองซื้อสะสม (DCA) ในกองทุนหุ้น <b>VOO (S&P 500)</b> แบบคู่ขนาน เพื่อดูว่า <i>"ถ้าเปลี่ยนค่าหวยเป็นเงินลงทุน"</i> ในระยะยาวใครจะกำไรมากกว่ากัน!
+                    <strong>กติกาการเปรียบเทียบ:</strong> ทุกครั้งที่คุณจ่ายเงินซื้อสลาก ระบบจะนำ <b>"เงินค่าหวยงวดนั้น"</b> ไปจำลองซื้อสะสม (DCA) ในกองทุนหุ้น <b>VOO (S&P 500)</b> แบบคู่ขนาน เพื่อดูว่า <i>"ถ้าเปลี่ยนค่าหวยเป็นเงินลงทุน"</i> ในระยะยาวใครจะกำไรมากกว่ากัน!
                 </p>
             </div>
 
@@ -296,6 +296,12 @@
             <div id="tsResultBox" class="p-4 rounded-2xl text-center shadow-md border-2 bg-white">
                 <!-- จะถูกแทรกด้วย JS -->
             </div>
+            
+            <!-- กล่องสะท้อนความจริง (Reality Check) -->
+            <div id="realityCheckContainer" class="mt-4">
+                <!-- ข้อมูลจะถูกแทรกด้วย JS -->
+            </div>
+
             <button onclick="document.getElementById('timeSkipResultsSection').classList.add('hidden')" class="w-full mt-6 bg-purple-600 hover:bg-purple-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base transform hover:scale-[1.02]">
                 ปิดหน้าต่างนี้และเล่นต่อ
             </button>
@@ -328,7 +334,7 @@
         
         // สถิติผลตอบแทนรายปี S&P 500 (2014-2025)
         const SP500_HISTORICAL_ANNUAL = [0.136, 0.014, 0.120, 0.218, -0.044, 0.315, 0.184, 0.287, -0.181, 0.263, 0.242, 0.155];
-        let investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 }; 
+        let investment = { draws: 0, principal: 0, value: 0, netVoo: 0 }; 
 
         const container = document.getElementById('digitInputsContainer');
         const addTicketBtn = document.getElementById('addTicketBtn');
@@ -345,33 +351,27 @@
         window.resetGame = function() {
             if(!confirm("คุณต้องการล้างข้อมูลและเริ่มเกมใหม่ตั้งแต่ศูนย์ใช่หรือไม่?")) return;
             
-            // เคลียร์ข้อมูลทั้งหมด
             stats = { totalTickets: 0, totalWinningTickets: 0, totalSpent: 0, totalWon: 0, netLottery: 0 };
-            investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 };
+            investment = { draws: 0, principal: 0, value: 0, netVoo: 0 };
             userTickets = [];
             
-            // อัปเดต UI 
             renderCart();
             updateUI();
             updateMainStats();
             
-            // ซ่อนกล่องผลลัพธ์
             resultsSection.classList.add('hidden');
             timeSkipResultsSection.classList.add('hidden');
             
-            // รีเซ็ตปุ่มออกรางวัล
             drawBtn.disabled = true;
             drawBtn.innerHTML = '🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)';
             addTicketBtn.disabled = false;
             
-            // สุ่มเลขใหม่ให้เลย
             for(let i=0; i<6; i++) {
                 if(!lockedDigits[i]) {
                     document.getElementById(`digit-input-${i}`).value = Math.floor(Math.random() * 10);
                 }
             }
 
-            // รีเซ็ตแบนเนอร์ผู้ชนะ
             const banner = document.getElementById('winnerBanner');
             banner.innerHTML = "เริ่มเสี่ยงโชคเพื่อดูว่าใครจะชนะ!";
             banner.className = "mt-4 w-full py-2 sm:py-3 bg-gray-100 rounded-xl text-center font-bold text-gray-500 border border-gray-300 text-sm sm:text-base flex items-center justify-center gap-2 transition-all duration-300";
@@ -542,17 +542,15 @@
             investment.draws += 1;
             investment.principal += cost;
             
-            // ทุกๆ 24 งวด (1 ปี) หรือรอบแรกสุด ให้สุ่มผลตอบแทนของปีนั้น
+            // Monte Carlo: สุ่มเลือกผลตอบแทน 1 ปีมาใช้งานในทุกๆ 1 ปีที่ผ่านไป
             if (investment.draws === 1 || (investment.draws - 1) % 24 === 0) {
-                // สุ่มเลือก 1 ปีจากประวัติศาสตร์ (Monte Carlo Simulation)
                 let randomYearIdx = Math.floor(Math.random() * SP500_HISTORICAL_ANNUAL.length);
                 let annualReturn = SP500_HISTORICAL_ANNUAL[randomYearIdx];
-                
-                // เพิ่ม Noise ความผันผวนแบบสุ่มอีก ±3% เพื่อไม่ให้ซ้ำเดิมเป๊ะๆ
-                let noise = (Math.random() - 0.5) * 0.06; 
+                // ใส่ Noise ให้ไม่เป๊ะเกินไป
+                let noise = (Math.random() - 0.5) * 0.05; 
                 annualReturn += noise;
-
-                // คำนวณดอกเบี้ยทบต้นแบบรายงวด (Bi-weekly CAGR) สำหรับปีนี้
+                
+                // คำนวณดอกเบี้ยทบต้นแบบรายครึ่งเดือน (Bi-weekly CAGR)
                 investment.currentBiWeeklyReturn = Math.pow(1 + annualReturn, 1/24) - 1;
             }
 
@@ -662,12 +660,10 @@
 
             const totalDrawsToSkip = years * 24; // 1 ปี มี 24 งวด
 
-            // Lock UI and show processing
             drawBtn.disabled = true;
             addTicketBtn.disabled = true;
             document.body.style.cursor = 'wait';
             
-            // ใช้ setTimeout เพื่อให้เบราว์เซอร์โชว์สถานะโหลดก่อนที่คริปต์ลูปหนักๆ จะทำงาน
             setTimeout(() => {
                 let tsSpent = 0;
                 let tsGrossWon = 0;
@@ -682,7 +678,6 @@
 
                     updateInvestment(costThisRound);
 
-                    // สร้างเลขออกรางวัล
                     const p1 = generateRandomNumbers(1, 6)[0];
                     let p1_num = parseInt(p1);
                     let adj1 = (p1_num === 0) ? 999999 : p1_num - 1;
@@ -700,7 +695,6 @@
                         back2: generateRandomNumbers(1, 2)
                     };
 
-                    // กำหนดเลขที่จะทาย
                     let ticketsToPlay = [];
                     if (numType === 'cart') {
                         ticketsToPlay = userTickets;
@@ -708,7 +702,6 @@
                         ticketsToPlay = generateRandomNumbers(actualTicketCount, 6);
                     }
 
-                    // ตรวจรางวัล
                     const checkResult = checkWinnings(ticketsToPlay, generatedDraws);
                     if (checkResult.wonThisRound > 0) {
                         tsGrossWon += checkResult.wonThisRound;
@@ -722,19 +715,43 @@
                 stats.totalWinningTickets += tsWinCount;
                 stats.netLottery = stats.totalWon - stats.totalSpent;
                 
-                // คืนค่า UI
                 drawBtn.disabled = userTickets.length === 0;
                 addTicketBtn.disabled = false;
                 document.body.style.cursor = 'default';
 
                 updateMainStats();
                 renderTimeSkipResults(years, totalDrawsToSkip, actualTicketCount, tsSpent, tsGrossWon, tsNetWon, tsWinCount);
-            }, 100); // 100ms ให้ UI ขยับก่อน
+            }, 100); 
         };
 
+        // ฟังก์ชันช่วยประเมินมูลค่าเป็นสิ่งของ
+        function getItemEquivalent(amount) {
+            if (amount <= 0) return "ความว่างเปล่า 💸";
+            if (amount < 10000) return `ชาบู/ปิ้งย่าง ประมาณ ${Math.floor(amount/500)} มื้อ 🍲`;
+            if (amount < 40000) return `สมาร์ทโฟนหรือทองคำสัก ${Math.floor(amount/40000 * 10) / 10} บาท 📱`;
+            if (amount < 100000) return `มอเตอร์ไซค์คันใหม่ 🛵`;
+            if (amount < 500000) return `ดาวน์รถยนต์สบายๆ 🚗`;
+            if (amount < 1000000) return `รถยนต์ ECO Car ป้ายแดงเงินสด 🚘`;
+            if (amount < 3000000) return `เงินดาวน์บ้านเดี่ยว / คอนโด 🏠`;
+            if (amount < 5000000) return `ทุนการศึกษาลูกจนจบปริญญา 🎓`;
+            return `เกษียณล่วงหน้าได้สบายๆ! (อิสรภาพทางการเงิน) 🏖️`;
+        }
+
+        // ฟังก์ชันช่วยประเมินมูลค่าเป็นเวลาทำงาน
+        function getTimeFreedom(amount) {
+            if (amount <= 0) return "ต้องทำงานต่อไป 💼";
+            const avgSalary = 25000;
+            const months = Math.floor(amount / avgSalary);
+            if (months < 1) return `น้อยกว่า 1 เดือน`;
+            if (months < 12) return `${months} เดือน`;
+            const years = Math.floor(months / 12);
+            const remainMonths = months % 12;
+            return remainMonths > 0 ? `${years} ปี ${remainMonths} เดือน` : `${years} ปี`;
+        }
+
         function renderTimeSkipResults(years, totalDraws, ticketsPerDraw, spent, gross, net, winCount) {
-            resultsSection.classList.add('hidden'); // ปิดหน้าต่างงวดเดียว
-            timeSkipResultsSection.classList.remove('hidden'); // เปิดหน้าต่างสรุป
+            resultsSection.classList.add('hidden'); 
+            timeSkipResultsSection.classList.remove('hidden'); 
             
             const box = document.getElementById('tsResultBox');
             const profit = net - spent;
@@ -767,8 +784,60 @@
                         <span class="font-black ${isProfit ? 'text-green-600' : 'text-red-600'} text-xl">${isProfit ? '+' : ''}฿${profit.toLocaleString()}</span>
                     </div>
                 </div>
-                
-                <p class="text-xs text-gray-500 mt-4">เช็คยอดเงินของฝั่ง VOO ที่กระดานสรุปผลด้านบนเพื่อเปรียบเทียบสิ!</p>
+            `;
+
+            // ส่วน Reality Check (สะท้อนความจริง)
+            const realityContainer = document.getElementById('realityCheckContainer');
+            const currentVooValue = investment.value;
+            
+            const currentLotteryNet = stats.netLottery;
+            const absLotteryNet = Math.abs(currentLotteryNet);
+            const isLotteryLoss = currentLotteryNet < 0;
+            
+            let lotteryRealityText = "";
+            if (isLotteryLoss) {
+                lotteryRealityText = `
+                    <p class="text-xs text-gray-500 mb-1">💸 จากยอดขาดทุนสะสมในการซื้อหวยทั้งหมดของคุณ (฿${absLotteryNet.toLocaleString()}) เทียบเท่ากับคุณสูญเสีย...</p>
+                    <p class="font-bold text-gray-800 text-sm bg-white p-2 rounded border border-gray-200 shadow-inner">
+                        ❌ ${getItemEquivalent(absLotteryNet)}
+                    </p>
+                `;
+            } else if (currentLotteryNet > 0) {
+                lotteryRealityText = `
+                    <p class="text-xs text-green-600 mb-1">🎉 จากกำไรสะสมในการซื้อหวยทั้งหมดของคุณ (฿${absLotteryNet.toLocaleString()}) เทียบเท่ากับ...</p>
+                    <p class="font-bold text-gray-800 text-sm bg-white p-2 rounded border border-gray-200 shadow-inner">
+                        ✅ ${getItemEquivalent(absLotteryNet)}
+                    </p>
+                `;
+            } else {
+                lotteryRealityText = `
+                    <p class="text-xs text-gray-500 mb-1">⚖️ ตอนนี้คุณเท่าทุน (ยังไม่กำไรหรือขาดทุนจากหวย)</p>
+                `;
+            }
+            
+            realityContainer.innerHTML = `
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm text-left relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 text-6xl opacity-10">🤔</div>
+                    <h4 class="font-bold text-indigo-800 mb-3 text-sm sm:text-base border-b border-indigo-200 pb-2">
+                        💡 มุมมองสะท้อนความจริง (Reality Check)
+                    </h4>
+                    
+                    <div class="mb-4">
+                        ${lotteryRealityText}
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-indigo-500 mb-1">📈 แต่ถ้าเปลี่ยนเงินค่าหวยทั้งหมดไปลงทุน VOO (มูลค่าพอร์ตตอนนี้ ฿${Math.round(currentVooValue).toLocaleString()}) เทียบเท่ากับ...</p>
+                        <div class="bg-indigo-600 p-3 rounded text-white shadow-md">
+                            <p class="font-bold text-sm sm:text-base mb-1">✅ ${getItemEquivalent(currentVooValue)}</p>
+                            <p class="text-xs text-indigo-200 pt-2 border-t border-indigo-500">
+                                หรือเทียบเท่ากับการหยุดทำงาน กินเงินเดือนฟรีๆ ได้ถึง 
+                                <span class="font-black text-yellow-300 text-sm">${getTimeFreedom(currentVooValue)}</span> 
+                                <span class="text-[9px]">(คิดจากฐานเงินเดือน 25,000 บาท)</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             `;
 
             timeSkipResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -809,7 +878,6 @@
             document.getElementById('vooPrincipalVal').innerText = `฿${investment.principal.toLocaleString()}`;
             document.getElementById('vooValueVal').innerText = `฿${Math.round(investment.value).toLocaleString()}`;
             
-            // คำนวณ % กำไร/ขาดทุนรวมของพอร์ต
             let totalPlPercent = investment.principal > 0 ? (investment.netVoo / investment.principal) * 100 : 0;
             const vooTotalPlEl = document.getElementById('vooTotalPlVal');
             if (investment.netVoo > 0) {
@@ -851,10 +919,9 @@
         }
 
         function renderResults(cost, grossWon, netWon, details) {
-            timeSkipResultsSection.classList.add('hidden'); // ปิดหน้าข้ามเวลา
-            resultsSection.classList.remove('hidden'); // เปิดหน้ารายงวด
+            timeSkipResultsSection.classList.add('hidden'); 
+            resultsSection.classList.remove('hidden'); 
             
-            // ดูรางวัลย่อยได้ด้วย
             const toggleBtn = document.getElementById('toggleOtherPrizesBtn');
             const otherPrizes = document.getElementById('otherPrizesContainer');
             if(toggleBtn) {
@@ -880,33 +947,26 @@
             document.getElementById('res-prize4').innerText = drawResults.prize4.join('   ');
             document.getElementById('res-prize5').innerText = drawResults.prize5.join('   ');
             
-            // ฟังก์ชันปุ่ม "เริ่มซื้อและเล่นรอบถัดไป" อยู่ตรงนี้!
             document.getElementById('playAgainBtn').onclick = () => {
-                // 1. ล้างกระดาษสลากงวดที่แล้วทิ้ง
                 userTickets = [];
                 
-                // 2. ปลดล็อคปุ่มกดให้กลับมาใช้งานได้ และปิดปุ่มออกรางวัลไปก่อน
                 drawBtn.disabled = true;
                 drawBtn.innerHTML = '🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)';
                 addTicketBtn.disabled = false;
                 
-                // 3. อัปเดตตระกร้าให้ว่างเปล่า
                 renderCart();
                 updateUI();
                 
-                // 4. ซ่อนกล่องผลรางวัล
                 resultsSection.classList.add('hidden');
                 if(otherPrizes) otherPrizes.classList.add('hidden');
                 if(toggleBtn) toggleBtn.innerText = 'ดูรางวัลที่ 2, 3, 4, 5';
                 
-                // 5. สุ่มตัวเลขใหม่เตรียมให้เล่น (เว้นช่องที่ล็อคไว้)
                 for(let i=0; i<6; i++) {
                     if(!lockedDigits[i]) {
                         document.getElementById(`digit-input-${i}`).value = Math.floor(Math.random() * 10);
                     }
                 }
 
-                // 6. เลื่อนจอกลับไปข้างบน
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
