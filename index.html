@@ -872,10 +872,33 @@
             document.getElementById('res-prize4').innerText = drawResults.prize4.join('   ');
             document.getElementById('res-prize5').innerText = drawResults.prize5.join('   ');
             
+            // ฟังก์ชันปุ่ม "เริ่มซื้อและเล่นรอบถัดไป" อยู่ตรงนี้!
             document.getElementById('playAgainBtn').onclick = () => {
+                // 1. ล้างกระดาษสลากงวดที่แล้วทิ้ง
+                userTickets = [];
+                
+                // 2. ปลดล็อคปุ่มกดให้กลับมาใช้งานได้ และปิดปุ่มออกรางวัลไปก่อน
+                drawBtn.disabled = true;
+                drawBtn.innerHTML = '🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)';
+                addTicketBtn.disabled = false;
+                
+                // 3. อัปเดตตระกร้าให้ว่างเปล่า
+                renderCart();
+                updateUI();
+                
+                // 4. ซ่อนกล่องผลรางวัล
                 resultsSection.classList.add('hidden');
                 if(otherPrizes) otherPrizes.classList.add('hidden');
                 if(toggleBtn) toggleBtn.innerText = 'ดูรางวัลที่ 2, 3, 4, 5';
+                
+                // 5. สุ่มตัวเลขใหม่เตรียมให้เล่น (เว้นช่องที่ล็อคไว้)
+                for(let i=0; i<6; i++) {
+                    if(!lockedDigits[i]) {
+                        document.getElementById(`digit-input-${i}`).value = Math.floor(Math.random() * 10);
+                    }
+                }
+
+                // 6. เลื่อนจอกลับไปข้างบน
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
