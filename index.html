@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จำลองสลากกินแบ่งรัฐบาล 6 หลัก</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            min-height: 100vh;
+        }
+        /* ซ่อนลูกศรใน input number */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        /* อนิเมชันกระดานรางวัล */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-4 pb-20 flex flex-col items-center">
+
+    <!-- Container หลัก -->
+    <div class="w-full max-w-2xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-white">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-4 px-6 text-center text-white relative">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-wide flex items-center justify-center gap-2">
+                🎫 ระบบจำลองสลาก 6 หลัก
+            </h1>
+            <p class="text-blue-100 mt-1 text-sm sm:text-base">ลุ้นรางวัลใหญ่ 6 ล้านบาท พร้อมระบบล็อคตัวเลข</p>
+        </div>
+
+        <!-- Dashboard การเงินแบบย่อ -->
+        <div class="grid grid-cols-3 gap-1 bg-gray-50 border-b border-gray-200 text-center p-2">
+            <div class="p-1">
+                <div class="text-[10px] sm:text-xs text-gray-500 font-semibold">ซื้อสลากทั้งหมด</div>
+                <div id="totalTicketsVal" class="text-base sm:text-lg font-bold text-gray-800">0 ใบ</div>
+            </div>
+            <div class="p-1 border-x border-gray-200">
+                <div class="text-[10px] sm:text-xs text-red-500 font-semibold">จ่ายเงินไป</div>
+                <div id="totalSpentVal" class="text-base sm:text-lg font-bold text-red-600">฿0</div>
+            </div>
+            <div class="p-1">
+                <div class="text-[10px] sm:text-xs text-green-600 font-semibold">รับรางวัลสะสม</div>
+                <div id="totalWonVal" class="text-base sm:text-lg font-bold text-green-600">฿0</div>
+            </div>
+        </div>
+
+        <!-- พื้นที่เลือกเลข -->
+        <div class="p-4 sm:p-6 flex flex-col items-center bg-white">
+            
+            <h2 class="text-lg font-bold text-gray-800 mb-2">เลือกระบุเลขของคุณ</h2>
+            <p class="text-xs sm:text-sm text-gray-500 mb-4 text-center">
+                พิมพ์ตัวเลขแต่ละหลัก หรือกด "ไอคอนแม่กุญแจ" เพื่อล็อคเลขหลักนั้นไว้ แล้วกดสุ่มหลักที่เหลือ
+            </p>
+
+            <!-- กล่องใส่ตัวเลข 6 หลัก -->
+            <div class="flex gap-1 sm:gap-2 justify-center w-full mb-2">
+                <!-- จะถูกสร้างด้วย JavaScript -->
+                <div id="digitInputsContainer" class="flex gap-1 sm:gap-2"></div>
+            </div>
+
+            <!-- ปุ่มสุ่มและข้อความเตือน -->
+            <div id="errorMsg" class="text-red-500 text-xs font-bold h-4 mb-2"></div>
+            
+            <div class="flex flex-wrap justify-center gap-2 mb-4 w-full">
+                <button id="randomAllBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm border border-gray-200 transition-all flex-1 min-w-[120px]">
+                    🎲 สุ่มใหม่ทั้งหมด
+                </button>
+                <button id="randomUnlockedBtn" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm border border-purple-200 transition-all flex-1 min-w-[120px]">
+                    ✨ สุ่มเฉพาะที่ไม่ได้ล็อค
+                </button>
+            </div>
+
+            <!-- ปุ่มเพิ่มสลาก -->
+            <button id="addTicketBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all transform hover:scale-[1.02] text-sm sm:text-base mb-6">
+                + เพิ่มสลากชุดนี้ (80 บาท)
+            </button>
+
+            <!-- รถเข็นสลากที่เลือก -->
+            <div class="w-full border-t border-gray-200 pt-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-md font-bold text-gray-700">🛒 สลากในมือของคุณ</h3>
+                    <span id="cartCountBadge" class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-lg">0 ใบ</span>
+                </div>
+                
+                <div id="ticketCart" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1">
+                    <!-- รายการสลากจะถูกเพิ่มที่นี่ -->
+                    <div class="col-span-full text-center text-gray-400 text-sm py-4 italic">
+                        ยังไม่มีสลาก ลองเลือกเลขแล้วกดเพิ่มสลากดูสิ!
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ปุ่มออกรางวัล -->
+            <div class="w-full mt-6">
+                <button id="drawBtn" disabled class="w-full bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed text-lg">
+                    🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ส่วนแสดงผลรางวัล (ซ่อนไว้ก่อน) -->
+    <div id="resultsSection" class="hidden w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden mt-4 border-2 border-indigo-200 fade-in">
+        <div class="bg-indigo-600 p-4 text-center text-white">
+            <h2 class="text-2xl font-black">🎉 ผลการออกรางวัล 🎉</h2>
+        </div>
+        
+        <div class="p-4 sm:p-6 bg-gray-50">
+            <!-- สรุปผลของผู้เล่น -->
+            <div id="playerResultBox" class="mb-6 p-4 rounded-2xl text-center shadow-sm border-2">
+                <!-- จะถูกแทรกด้วย JS -->
+            </div>
+
+            <!-- แสดงเลขที่ออก -->
+            <h3 class="font-bold text-gray-700 mb-3 text-lg border-b pb-2">ผลสลากกินแบ่ง</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-red-100 text-center">
+                    <div class="text-red-500 font-bold text-sm">รางวัลที่ 1 (6,000,000 ฿)</div>
+                    <div id="res-prize1" class="text-3xl font-black text-gray-800 tracking-widest mt-1">-</div>
+                </div>
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-orange-100 text-center">
+                    <div class="text-orange-500 font-bold text-sm">รางวัลข้างเคียง (100,000 ฿)</div>
+                    <div id="res-prize1adj" class="text-lg font-bold text-gray-700 mt-1 tracking-widest">-</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-blue-100 text-center">
+                    <div class="text-blue-500 font-bold text-xs sm:text-sm">เลขหน้า 3 ตัว</div>
+                    <div id="res-front3" class="text-lg font-bold text-gray-700 mt-1 tracking-widest">-</div>
+                </div>
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-blue-100 text-center">
+                    <div class="text-blue-500 font-bold text-xs sm:text-sm">เลขท้าย 3 ตัว</div>
+                    <div id="res-back3" class="text-lg font-bold text-gray-700 mt-1 tracking-widest">-</div>
+                </div>
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-pink-100 text-center">
+                    <div class="text-pink-500 font-bold text-xs sm:text-sm">เลขท้าย 2 ตัว</div>
+                    <div id="res-back2" class="text-lg font-bold text-gray-700 mt-1 tracking-widest">-</div>
+                </div>
+            </div>
+
+            <!-- ปุ่มดูรางวัลอื่นๆ -->
+            <button id="toggleOtherPrizesBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                ดูรางวัลที่ 2, 3, 4, 5
+            </button>
+            <div id="otherPrizesContainer" class="hidden mt-4 text-xs sm:text-sm">
+                <div class="mb-3">
+                    <strong class="text-gray-700">รางวัลที่ 2 (5 รางวัล):</strong>
+                    <div id="res-prize2" class="text-gray-600 break-words tracking-widest leading-relaxed"></div>
+                </div>
+                <div class="mb-3">
+                    <strong class="text-gray-700">รางวัลที่ 3 (10 รางวัล):</strong>
+                    <div id="res-prize3" class="text-gray-600 break-words tracking-widest leading-relaxed"></div>
+                </div>
+                <div class="mb-3">
+                    <strong class="text-gray-700">รางวัลที่ 4 (50 รางวัล):</strong>
+                    <div id="res-prize4" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs"></div>
+                </div>
+                <div>
+                    <strong class="text-gray-700">รางวัลที่ 5 (100 รางวัล):</strong>
+                    <div id="res-prize5" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs h-32 overflow-y-auto bg-gray-100 p-2 rounded border"></div>
+                </div>
+            </div>
+
+            <button id="playAgainBtn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all text-sm sm:text-base">
+                ซื้อสลากชุดใหม่ (รอบถัดไป)
+            </button>
+        </div>
+    </div>
+
+    <!-- Script สำหรับเกมสลาก 6 หลัก -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const TICKET_PRICE = 80;
+            
+            // โครงสร้างของรางวัล
+            const PRIZE_STRUCT = {
+                prize1: { name: 'รางวัลที่ 1', amount: 6000000 },
+                prize1adj: { name: 'รางวัลข้างเคียงรางวัลที่ 1', amount: 100000 },
+                prize2: { name: 'รางวัลที่ 2', amount: 200000 },
+                prize3: { name: 'รางวัลที่ 3', amount: 80000 },
+                prize4: { name: 'รางวัลที่ 4', amount: 40000 },
+                prize5: { name: 'รางวัลที่ 5', amount: 20000 },
+                front3: { name: 'รางวัลเลขหน้า 3 ตัว', amount: 4000 },
+                back3: { name: 'รางวัลเลขท้าย 3 ตัว', amount: 4000 },
+                back2: { name: 'รางวัลเลขท้าย 2 ตัว', amount: 2000 }
+            };
+
+            // State ของแอปพลิเคชัน
+            let userTickets = []; // เก็บสลาก 6 หลักที่ผู้ใช้ซื้อ เช่น ["123456", "000000"]
+            let lockedDigits = [false, false, false, false, false, false];
+            let drawResults = null;
+
+            // สถิติการเงิน
+            let stats = {
+                totalTickets: 0,
+                totalSpent: 0,
+                totalWon: 0
+            };
+
+            // Elements
+            const container = document.getElementById('digitInputsContainer');
+            const addTicketBtn = document.getElementById('addTicketBtn');
+            const randomAllBtn = document.getElementById('randomAllBtn');
+            const randomUnlockedBtn = document.getElementById('randomUnlockedBtn');
+            const ticketCart = document.getElementById('ticketCart');
+            const drawBtn = document.getElementById('drawBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // 1. สร้าง UI สำหรับช่องกรอก 6 หลัก
+            function buildInputs() {
+                container.innerHTML = '';
+                for(let i = 0; i < 6; i++) {
+                    const col = document.createElement('div');
+                    col.className = 'flex flex-col items-center gap-1';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.inputMode = 'numeric';
+                    input.maxLength = 1;
+                    input.dataset.idx = i;
+                    input.className = 'w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors bg-white text-gray-800';
+                    input.value = Math.floor(Math.random() * 10); // สุ่มค่าเริ่มต้นให้
+                    
+                    input.addEventListener('input', handleDigitInput);
+                    input.addEventListener('focus', (e) => e.target.select());
+
+                    const lockBtn = document.createElement('button');
+                    lockBtn.className = 'text-xs p-1 rounded-md transition-colors ' + (lockedDigits[i] ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400 hover:bg-gray-200');
+                    lockBtn.innerHTML = lockedDigits[i] ? '🔒' : '🔓';
+                    lockBtn.onclick = () => toggleLock(i, lockBtn);
+
+                    col.appendChild(input);
+                    col.appendChild(lockBtn);
+                    container.appendChild(col);
+                }
+            }
+
+            // จัดการพิมพ์ตัวเลขแล้วเลื่อนอัตโนมัติ
+            function handleDigitInput(e) {
+                const val = e.target.value;
+                // อนุญาตเฉพาะตัวเลข
+                if (!/^[0-9]$/.test(val)) {
+                    e.target.value = '';
+                    return;
+                }
+                errorMsg.innerText = ''; // เคลียร์ error
+                
+                const idx = parseInt(e.target.dataset.idx);
+                if (idx < 5 && val !== '') {
+                    // ไปช่องถัดไป
+                    document.querySelector(`input[data-idx="${idx + 1}"]`).focus();
+                }
+            }
+
+            function toggleLock(idx, btn) {
+                lockedDigits[idx] = !lockedDigits[idx];
+                btn.innerHTML = lockedDigits[idx] ? '🔒' : '🔓';
+                btn.className = 'text-xs p-1 rounded-md transition-colors ' + (lockedDigits[idx] ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400 hover:bg-gray-200');
+            }
+
+            // อ่านค่าเลข 6 หลักจากช่อง
+            function getCurrentNumber() {
+                let num = '';
+                for(let i=0; i<6; i++) {
+                    const val = document.querySelector(`input[data-idx="${i}"]`).value;
+                    if(val === '') return null;
+                    num += val;
+                }
+                return num;
+            }
+
+            // สุ่มเลขทั้งหมด
+            randomAllBtn.onclick = () => {
+                for(let i=0; i<6; i++) {
+                    document.querySelector(`input[data-idx="${i}"]`).value = Math.floor(Math.random() * 10);
+                }
+                errorMsg.innerText = '';
+            };
+
+            // สุ่มเฉพาะที่ไม่ได้ล็อค
+            randomUnlockedBtn.onclick = () => {
+                for(let i=0; i<6; i++) {
+                    if(!lockedDigits[i]) {
+                        document.querySelector(`input[data-idx="${i}"]`).value = Math.floor(Math.random() * 10);
+                    }
+                }
+                errorMsg.innerText = '';
+            };
+
+            // เพิ่มสลากลงในตะกร้า
+            addTicketBtn.onclick = () => {
+                const num = getCurrentNumber();
+                if (!num) {
+                    errorMsg.innerText = '* กรุณาระบุตัวเลขให้ครบทั้ง 6 หลัก';
+                    return;
+                }
+                if (userTickets.length >= 20) {
+                    errorMsg.innerText = '* ซื้อสลากได้สูงสุด 20 ใบต่อรอบเพื่อประสิทธิภาพการแสดงผล';
+                    return;
+                }
+
+                userTickets.push(num);
+                renderCart();
+                updateUI();
+                
+                // กระพริบปุ่มเพิ่มสีเขียว
+                addTicketBtn.classList.replace('bg-blue-600', 'bg-green-500');
+                addTicketBtn.innerText = '✔ เพิ่มเรียบร้อย!';
+                setTimeout(() => {
+                    addTicketBtn.classList.replace('bg-green-500', 'bg-blue-600');
+                    addTicketBtn.innerText = '+ เพิ่มสลากชุดนี้ (80 บาท)';
+                }, 1000);
+            };
+
+            // ลบสลากออก
+            window.removeTicket = function(index) {
+                userTickets.splice(index, 1);
+                renderCart();
+                updateUI();
+            };
+
+            // อัปเดตตะกร้า
+            function renderCart() {
+                if (userTickets.length === 0) {
+                    ticketCart.innerHTML = `<div class="col-span-full text-center text-gray-400 text-sm py-4 italic">ยังไม่มีสลาก ลองเลือกเลขแล้วกดเพิ่มสลากดูสิ!</div>`;
+                    return;
+                }
+                
+                ticketCart.innerHTML = '';
+                userTickets.forEach((num, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 shadow-sm';
+                    div.innerHTML = `
+                        <span class="font-mono font-bold text-blue-800 tracking-widest text-sm">${num}</span>
+                        <button onclick="removeTicket(${index})" class="text-red-400 hover:text-red-600 p-1 bg-white rounded-md text-[10px] font-bold">X</button>
+                    `;
+                    ticketCart.appendChild(div);
+                });
+            }
+
+            function updateUI() {
+                const count = userTickets.length;
+                document.getElementById('cartCountBadge').innerText = `${count} ใบ`;
+                document.getElementById('drawCostText').innerText = (count * TICKET_PRICE).toLocaleString();
+                
+                if (count > 0) {
+                    drawBtn.disabled = false;
+                } else {
+                    drawBtn.disabled = true;
+                }
+            }
+
+            // ฟังก์ชันสุ่มตัวเลข n หลัก คืนค่าเป็น string
+            function generateRandomNumbers(count, digits) {
+                const arr = [];
+                for(let i=0; i<count; i++) {
+                    let numStr = Math.floor(Math.random() * Math.pow(10, digits)).toString();
+                    arr.push(numStr.padStart(digits, '0'));
+                }
+                return arr;
+            }
+
+            // ฟังก์ชันเริ่มออกรางวัล
+            drawBtn.onclick = () => {
+                if(userTickets.length === 0) return;
+                
+                // ล็อคปุ่มต่างๆ
+                drawBtn.disabled = true;
+                drawBtn.innerHTML = 'กำลังหมุนวงล้อ... 🎲';
+                addTicketBtn.disabled = true;
+                
+                // บันทึกเงินที่จ่ายไป
+                const costThisRound = userTickets.length * TICKET_PRICE;
+                stats.totalTickets += userTickets.length;
+                stats.totalSpent += costThisRound;
+
+                setTimeout(() => {
+                    simulateDraw(costThisRound);
+                }, 1000); // ดีเลย์สร้างความตื่นเต้น
+            };
+
+            function simulateDraw(costThisRound) {
+                // 1. สร้างผลรางวัลทั้งหมด
+                const p1 = generateRandomNumbers(1, 6)[0];
+                
+                // คำนวณรางวัลข้างเคียง (ต้องจัดการเรื่อง 000000 และ 999999)
+                let p1_num = parseInt(p1);
+                let adj1 = (p1_num === 0) ? 999999 : p1_num - 1;
+                let adj2 = (p1_num === 999999) ? 0 : p1_num + 1;
+                const p1adj = [adj1.toString().padStart(6, '0'), adj2.toString().padStart(6, '0')];
+
+                drawResults = {
+                    prize1: [p1],
+                    prize1adj: p1adj,
+                    prize2: generateRandomNumbers(5, 6),
+                    prize3: generateRandomNumbers(10, 6),
+                    prize4: generateRandomNumbers(50, 6),
+                    prize5: generateRandomNumbers(100, 6),
+                    front3: generateRandomNumbers(2, 3),
+                    back3: generateRandomNumbers(2, 3),
+                    back2: generateRandomNumbers(1, 2)
+                };
+
+                // 2. ตรวจรางวัลสำหรับสลากแต่ละใบที่ผู้ใช้มี
+                let wonThisRound = 0;
+                let winningDetails = []; // เก็บรายละเอียดว่าใบไหนถูกอะไรบ้าง
+
+                userTickets.forEach(ticket => {
+                    let wonPrizes = [];
+                    
+                    // ตรวจรางวัลที่ 1
+                    if (drawResults.prize1.includes(ticket)) wonPrizes.push(PRIZE_STRUCT.prize1);
+                    // ตรวจรางวัลข้างเคียง
+                    if (drawResults.prize1adj.includes(ticket)) wonPrizes.push(PRIZE_STRUCT.prize1adj);
+                    // ตรวจรางวัลที่ 2-5
+                    if (drawResults.prize2.includes(ticket)) wonPrizes.push(PRIZE_STRUCT.prize2);
+                    if (drawResults.prize3.includes(ticket)) wonPrizes.push(PRIZE_STRUCT.prize3);
+                    if (drawResults.prize4.includes(ticket)) wonPrizes.push(PRIZE_STRUCT.prize4);
+                    if (drawResults.prize5.includes(ticket)) wonPrizes.push(PRIZE_STRUCT.prize5);
+                    
+                    // ตรวจเลขหน้า 3 ตัว (ตัวอักษร 3 ตัวแรก)
+                    const f3 = ticket.substring(0, 3);
+                    if (drawResults.front3.includes(f3)) wonPrizes.push(PRIZE_STRUCT.front3);
+                    
+                    // ตรวจเลขท้าย 3 ตัว (ตัวอักษร 3 ตัวสุดท้าย)
+                    const b3 = ticket.substring(3, 6);
+                    if (drawResults.back3.includes(b3)) wonPrizes.push(PRIZE_STRUCT.back3);
+                    
+                    // ตรวจเลขท้าย 2 ตัว
+                    const b2 = ticket.substring(4, 6);
+                    if (drawResults.back2.includes(b2)) wonPrizes.push(PRIZE_STRUCT.back2);
+
+                    if (wonPrizes.length > 0) {
+                        let ticketTotal = 0;
+                        wonPrizes.forEach(p => ticketTotal += p.amount);
+                        wonThisRound += ticketTotal;
+                        winningDetails.push({
+                            ticket: ticket,
+                            prizes: wonPrizes,
+                            total: ticketTotal
+                        });
+                    }
+                });
+
+                // อัปเดตสถิติ
+                stats.totalWon += wonThisRound;
+                updateMainStats();
+
+                // 3. แสดงผล
+                renderResults(costThisRound, wonThisRound, winningDetails);
+            }
+
+            function updateMainStats() {
+                document.getElementById('totalTicketsVal').innerText = `${stats.totalTickets} ใบ`;
+                document.getElementById('totalSpentVal').innerText = `฿${stats.totalSpent.toLocaleString()}`;
+                document.getElementById('totalWonVal').innerText = `฿${stats.totalWon.toLocaleString()}`;
+            }
+
+            function renderResults(cost, won, details) {
+                resultsSection.classList.remove('hidden');
+                
+                // แสดงเลขรางวัลหลักๆ
+                document.getElementById('res-prize1').innerText = drawResults.prize1[0];
+                document.getElementById('res-prize1adj').innerText = drawResults.prize1adj.join(' , ');
+                document.getElementById('res-front3').innerText = drawResults.front3.join(' , ');
+                document.getElementById('res-back3').innerText = drawResults.back3.join(' , ');
+                document.getElementById('res-back2').innerText = drawResults.back2[0];
+                
+                // ซ่อนเลขเยอะๆ ไว้ใน container (รางวัล 2,3,4,5)
+                document.getElementById('res-prize2').innerText = drawResults.prize2.join('   ');
+                document.getElementById('res-prize3').innerText = drawResults.prize3.join('   ');
+                document.getElementById('res-prize4').innerText = drawResults.prize4.join('   ');
+                document.getElementById('res-prize5').innerText = drawResults.prize5.join('   ');
+
+                // Render กล่องสรุปผลผู้เล่น
+                const pBox = document.getElementById('playerResultBox');
+                let net = won - cost;
+                
+                if (won > 0) {
+                    pBox.className = "mb-6 p-4 rounded-2xl text-center shadow-md border-2 bg-green-50 border-green-400";
+                    let detailHTML = details.map(d => {
+                        let prizeNames = d.prizes.map(p => p.name).join(', ');
+                        return `<div class="text-sm bg-white p-2 rounded mb-1 text-left shadow-sm border border-green-200">
+                                    <span class="font-bold text-green-700 tracking-widest">${d.ticket}</span> : 
+                                    <span class="text-gray-600">${prizeNames}</span> 
+                                    <span class="float-right font-bold text-green-600">+฿${d.total.toLocaleString()}</span>
+                                </div>`;
+                    }).join('');
+
+                    pBox.innerHTML = `
+                        <h3 class="text-xl font-black text-green-700 mb-2">🎉 ยินดีด้วย! คุณถูกรางวัล</h3>
+                        <div class="text-sm text-gray-700 mb-2">ซื้อ ${userTickets.length} ใบ จ่ายไป <span class="text-red-500 font-bold">${cost.toLocaleString()} ฿</span></div>
+                        <div class="text-lg font-bold text-green-600 mb-3">รับเงินรางวัลรวม: +${won.toLocaleString()} ฿</div>
+                        <div class="text-xs text-gray-500 mb-1 text-left">รายละเอียดสลากที่ถูกรางวัล:</div>
+                        ${detailHTML}
+                        <div class="mt-3 pt-2 border-t border-green-300 font-bold text-base">
+                            กำไรสุทธิรอบนี้: <span class="text-green-700">+${net.toLocaleString()} ฿</span>
+                        </div>
+                    `;
+                } else {
+                    pBox.className = "mb-6 p-4 rounded-2xl text-center shadow-md border-2 bg-red-50 border-red-300";
+                    pBox.innerHTML = `
+                        <h3 class="text-xl font-bold text-red-700 mb-1">😢 น่าเสียดาย ไม่ถูกรางวัลเลย</h3>
+                        <div class="text-sm text-gray-700 mb-2">ซื้อไป ${userTickets.length} ใบ</div>
+                        <div class="text-base font-bold text-red-600">ขาดทุนรอบนี้: -${cost.toLocaleString()} ฿</div>
+                        <div class="text-xs text-gray-500 mt-2">สลาก 1 ล้านใบ มีโอกาสถูกรางวัลที่ 1 แค่ 1 ใบเท่านั้น! ลองใหม่รอบหน้านะ</div>
+                    `;
+                }
+
+                // เลื่อนหน้าจอลงมาดูผล
+                setTimeout(() => {
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            // ควบคุมการแสดงรางวัลอื่นๆ
+            const toggleBtn = document.getElementById('toggleOtherPrizesBtn');
+            const otherPrizes = document.getElementById('otherPrizesContainer');
+            toggleBtn.onclick = () => {
+                if (otherPrizes.classList.contains('hidden')) {
+                    otherPrizes.classList.remove('hidden');
+                    toggleBtn.innerText = 'ซ่อนรางวัลอื่นๆ';
+                } else {
+                    otherPrizes.classList.add('hidden');
+                    toggleBtn.innerText = 'ดูรางวัลที่ 2, 3, 4, 5';
+                }
+            }
+
+            // ปุ่มเริ่มรอบใหม่
+            document.getElementById('playAgainBtn').onclick = () => {
+                userTickets = []; // ล้างตะกร้า
+                
+                // แก้บั๊ก: ต้องรีเซ็ตปุ่มกลับมาก่อนเรียก updateUI() เพื่อให้ระบบเจอกล่องตัวเลขยอดเงิน
+                drawBtn.disabled = true;
+                drawBtn.innerHTML = '🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)';
+                addTicketBtn.disabled = false;
+                
+                renderCart();
+                updateUI();
+                
+                // ซ่อนผลลัพธ์
+                resultsSection.classList.add('hidden');
+                otherPrizes.classList.add('hidden');
+                toggleBtn.innerText = 'ดูรางวัลที่ 2, 3, 4, 5';
+                
+                // สุ่มเลขชุดใหม่แบบปลดล็อคให้เป็นค่าเริ่มต้น
+                for(let i=0; i<6; i++) {
+                    if(!lockedDigits[i]) {
+                        document.querySelector(`input[data-idx="${i}"]`).value = Math.floor(Math.random() * 10);
+                    }
+                }
+
+                // เลื่อนหน้าจอกลับไปด้านบน
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            // สร้าง UI ครั้งแรก
+            buildInputs();
+        });
+    </script>
+</body>
+</html>
