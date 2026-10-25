@@ -83,10 +83,10 @@
             
             <div class="flex flex-wrap justify-center gap-2 mb-4 w-full">
                 <button id="randomAllBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm border border-gray-200 transition-all flex-1 min-w-[120px]">
-                    🎲 สุ่มใหม่ทั้งหมด
+                    🎲 สุ่มใหม่ทั้งหมด 6 หลัก (รวมถึงเลขที่ล็อคไว้ด้วย)
                 </button>
                 <button id="randomUnlockedBtn" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm border border-purple-200 transition-all flex-1 min-w-[120px]">
-                    ✨ สุ่มเฉพาะที่ไม่ได้ล็อค
+                    ✨ สุ่มเฉพาะหลักที่ไม่ได้ล็อค
                 </button>
             </div>
 
@@ -254,7 +254,7 @@
                     const unlockedBtnClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
                     const lockedBtnClass = 'bg-red-500 text-white border-red-600 shadow-md transform scale-[1.02]';
                     lockBtn.className = `w-full text-[10px] sm:text-xs py-1.5 px-0.5 rounded-md transition-all duration-200 font-bold flex items-center justify-center gap-1 border ${isLocked ? lockedBtnClass : unlockedBtnClass}`;
-                    lockBtn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : '🔓 กดเพื่อล็อค';
+                    lockBtn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : 'กดเพื่อล็อค';
                     lockBtn.onclick = () => toggleLock(i, lockBtn);
 
                     col.appendChild(input);
@@ -286,7 +286,7 @@
                 const unlockedBtnClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
                 const lockedBtnClass = 'bg-red-500 text-white border-red-600 shadow-md transform scale-[1.02]';
                 btn.className = `w-full text-[10px] sm:text-xs py-1.5 px-0.5 rounded-md transition-all duration-200 font-bold flex items-center justify-center gap-1 border ${isLocked ? lockedBtnClass : unlockedBtnClass}`;
-                btn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : '🔓 กดเพื่อล็อค';
+                btn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : 'กดเพื่อล็อค';
 
                 // อัปเดตสไตล์กล่องตัวเลขด้านบน
                 const unlockedInputClass = 'border-gray-300 bg-white text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200';
