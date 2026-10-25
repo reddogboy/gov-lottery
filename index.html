@@ -47,9 +47,9 @@
         <!-- Header -->
         <div class="bg-gradient-to-r from-blue-700 to-indigo-800 py-4 px-6 text-center text-white relative">
             <h1 class="text-2xl sm:text-3xl font-black tracking-wide flex flex-col items-center justify-center gap-1">
-                <span>🎫 จำลองการซื้อสลากกินแบ่งฯ vs การลงทุนในดัชนี S&P 500 💰</span>
+                <span>🎫 จำลองสลากกินแบ่งฯ vs VOO 💰</span>
             </h1>
-            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เสี่ยงโชค vs ลงทุน S&P 500 (จำลองสถิติจริงย้อนหลัง 10 ปี) by Jake the Red Dog @lottery_kitchen</p>
+            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เสี่ยงโชค vs ลงทุน S&P 500 (จำลองสถิติจริงย้อนหลัง) by Jake the Red Dog @lottery_kitchen</p>
         </div>
 
         <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด -->
@@ -57,7 +57,7 @@
             
             <div class="flex justify-between items-center mb-3 px-1">
                 <div class="text-sm font-bold text-gray-700">📊 สรุปผลลัพธ์ (ผ่านไป <span id="monthCountVal" class="text-blue-600">0</span> เดือน)</div>
-                <div class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-md">อิงผลตอบแทน S&P 500 ช่วงปี 2014-2025</div>
+                <div class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-md">อิงผลตอบแทน S&P 500 ปี 2014-2025</div>
             </div>
 
             <!-- กล่องเปรียบเทียบ -->
@@ -74,22 +74,25 @@
                         <div class="flex justify-between"><span>ซื้อสลากสะสม:</span> <span id="totalTicketsVal" class="font-bold text-gray-700">0 ใบ</span></div>
                         <div class="flex justify-between"><span>ถูกรางวัลสะสม:</span> <span id="totalWinTicketsVal" class="font-bold text-gray-700">0 ใบ</span></div>
                         <div class="flex justify-between"><span>จ่ายสะสม:</span> <span id="totalSpentVal" class="font-bold text-gray-700">฿0</span></div>
-                        <div class="flex justify-between"><span>รับรางวัล:</span> <span id="totalWonVal" class="font-bold text-gray-700">฿0</span></div>
+                        <div class="flex justify-between"><span>รับเงินสุทธิ:</span> <span id="totalWonVal" class="font-bold text-gray-700">฿0</span></div>
                     </div>
                 </div>
 
                 <!-- ฝั่ง VOO -->
-                <div id="vooBox" class="p-3 sm:p-4 bg-white border-2 border-gray-200 rounded-2xl text-center shadow-sm relative transition-all duration-300">
-                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md z-10 whitespace-nowrap">
-                        📈 ลงทุน VOO (DCA)
+                <div id="vooBox" class="p-3 sm:p-4 bg-white border-2 border-gray-200 rounded-2xl text-center shadow-sm relative transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md z-10 whitespace-nowrap">
+                            📈 ลงทุน VOO (DCA)
+                        </div>
+                        <div class="text-xs sm:text-sm font-semibold text-gray-500 mt-2 mb-1">กำไร/ขาดทุนสุทธิ</div>
+                        <div id="netVooVal" class="text-xl sm:text-3xl font-black text-gray-800">-</div>
                     </div>
-                    <div class="text-xs sm:text-sm font-semibold text-gray-500 mt-2 mb-1">กำไร/ขาดทุนสุทธิ</div>
-                    <div id="netVooVal" class="text-xl sm:text-3xl font-black text-gray-800">-</div>
                     
                     <div class="mt-3 pt-2 border-t border-gray-100 text-[10px] sm:text-xs text-gray-500 flex flex-col gap-1">
                         <div class="flex justify-between"><span>เงินต้น:</span> <span id="vooPrincipalVal" class="font-bold text-gray-700">฿0</span></div>
                         <div class="flex justify-between"><span>มูลค่าพอร์ต:</span> <span id="vooValueVal" class="font-bold text-gray-700">฿0</span></div>
                         <div class="flex justify-between"><span>ผลตอบแทนรวม:</span> <span id="vooTotalPlVal" class="font-bold text-gray-700">0.00%</span></div>
+                        <div class="flex justify-between"><span class="text-transparent">.</span></div> <!-- เติมช่องว่างให้มี 4 บรรทัดเท่าฝั่งซ้าย -->
                     </div>
                 </div>
             </div>
@@ -228,6 +231,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const TICKET_PRICE = 80;
+            const TAX_RATE = 0.015; // อัตราภาษีหัก ณ ที่จ่าย + อากรสแตมป์ (รวม 1.5%)
             
             // โครงสร้างของรางวัล
             const PRIZE_STRUCT = {
@@ -253,7 +257,7 @@
             // สถิติการลงทุน (VOO)
             // สถิติผลตอบแทนรายปี S&P 500 (2014-2025)
             const SP500_HISTORICAL_ANNUAL = [0.136, 0.014, 0.120, 0.218, -0.044, 0.315, 0.184, 0.287, -0.181, 0.263, 0.242, 0.155];
-            let investment = { months: 0, principal: 0, value: 0, netVoo: 0, yearStartValue: 0, yearStartPrincipal: 0 };
+            let investment = { months: 0, principal: 0, value: 0, netVoo: 0 };
 
             // Elements
             const container = document.getElementById('digitInputsContainer');
@@ -265,7 +269,7 @@
             const errorMsg = document.getElementById('errorMsg');
             const resultsSection = document.getElementById('resultsSection');
             
-            // 1. สร้าง UI สำหรับช่องกรอก 6 หลัก แบบปรับปรุงใหม่ให้เห็นชัด
+            // 1. สร้าง UI สำหรับช่องกรอก 6 หลัก
             function buildInputs() {
                 container.innerHTML = '';
                 for(let i = 0; i < 6; i++) {
@@ -281,7 +285,6 @@
                     input.dataset.idx = i;
                     input.id = `digit-input-${i}`;
                     
-                    // สไตล์กล่องตัวเลขแบบชัดๆ
                     const unlockedInputClass = 'border-gray-300 bg-white text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200';
                     const lockedInputClass = 'border-red-400 bg-red-100 text-red-700 shadow-inner';
                     input.className = `w-full h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-lg focus:outline-none transition-all duration-200 ${isLocked ? lockedInputClass : unlockedInputClass}`;
@@ -291,7 +294,6 @@
                     input.addEventListener('focus', (e) => e.target.select());
 
                     const lockBtn = document.createElement('button');
-                    // สไตล์ปุ่มล็อคแบบชัดๆ
                     const unlockedBtnClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
                     const lockedBtnClass = 'bg-red-600 text-white border-red-700 shadow-md transform scale-[1.02]';
                     lockBtn.className = `w-full text-[10px] sm:text-xs py-1.5 px-0.5 rounded-md transition-all duration-200 font-bold flex items-center justify-center gap-1 border ${isLocked ? lockedBtnClass : unlockedBtnClass}`;
@@ -317,19 +319,16 @@
                 }
             }
 
-            // ฟังก์ชันสลับล็อคตัวเลข อัปเดตทั้งปุ่มและช่องใส่ตัวเลขให้เปลี่ยนสี
             function toggleLock(idx, btn) {
                 lockedDigits[idx] = !lockedDigits[idx];
                 const isLocked = lockedDigits[idx];
                 const input = document.getElementById(`digit-input-${idx}`);
                 
-                // อัปเดตสไตล์ปุ่ม
                 const unlockedBtnClass = 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200';
                 const lockedBtnClass = 'bg-red-600 text-white border-red-700 shadow-md transform scale-[1.02]';
                 btn.className = `w-full text-[10px] sm:text-xs py-1.5 px-0.5 rounded-md transition-all duration-200 font-bold flex items-center justify-center gap-1 border ${isLocked ? lockedBtnClass : unlockedBtnClass}`;
                 btn.innerHTML = isLocked ? '🔒 ล็อคแล้ว' : 'กดเพื่อล็อค';
 
-                // อัปเดตสไตล์กล่องตัวเลขด้านบน
                 const unlockedInputClass = 'border-gray-300 bg-white text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200';
                 const lockedInputClass = 'border-red-400 bg-red-100 text-red-700 shadow-inner';
                 input.className = `w-full h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-lg focus:outline-none transition-all duration-200 ${isLocked ? lockedInputClass : unlockedInputClass}`;
@@ -432,7 +431,6 @@
             drawBtn.onclick = () => {
                 if(userTickets.length === 0) return;
                 
-                // ล็อคปุ่มไม่ให้กดซ้ำ และแสดงข้อความหมุนวงล้อ
                 drawBtn.disabled = true;
                 drawBtn.innerHTML = 'กำลังหมุนวงล้อ... 🎲';
                 addTicketBtn.disabled = true;
@@ -441,28 +439,18 @@
                 stats.totalTickets += userTickets.length;
                 stats.totalSpent += costThisRound;
 
-                // --- การจำลองดอกเบี้ย S&P 500 ย้อนหลังสมจริง ---
-                if (investment.months > 0 && investment.months % 12 === 0) {
-                    investment.yearStartValue = investment.value;
-                    investment.yearStartPrincipal = investment.principal;
-                }
-                
+                // --- การจำลองดอกเบี้ย S&P 500 แบบถูกต้อง (Monthly CAGR) ---
                 investment.months += 1;
                 investment.principal += costThisRound;
                 
-                // ดึงค่าผลตอบแทนรายปี โดยวนลูปกลับไปใหม่เมื่อครบ 10 ปี (120 เดือน)
                 let yearIndex = Math.floor((investment.months - 1) / 12) % SP500_HISTORICAL_ANNUAL.length;
                 let annualReturn = SP500_HISTORICAL_ANNUAL[yearIndex];
                 
-                // แปลงเป็นผลตอบแทนฐานรายเดือน
-                let baseMonthlyReturn = annualReturn / 12;
-                
-                // เพิ่มความผันผวน (Noise) เข้าไปเพื่อให้เหมือนตลาดหุ้นจริงที่ขึ้นๆ ลงๆ รายเดือน (± ~5%)
-                let noise = (Math.random() + Math.random() + Math.random() - 1.5) * 0.05;
-                let actualMonthlyReturn = baseMonthlyReturn + noise;
+                // คำนวณ Monthly Compound Rate จากอัตราผลตอบแทนรายปี
+                let trueMonthlyReturn = Math.pow(1 + annualReturn, 1/12) - 1;
 
-                // เงินก้อนเก่าทำงานได้ดอกเบี้ย (ผันผวน) + เติมเงินใหม่สิ้นเดือน
-                investment.value = (investment.value * (1 + actualMonthlyReturn)) + costThisRound;
+                // เงินก้อนเก่าบวกก้อนใหม่ทำงานได้ดอกเบี้ย
+                investment.value = (investment.value + costThisRound) * (1 + trueMonthlyReturn);
                 investment.netVoo = investment.value - investment.principal;
 
                 setTimeout(() => {
@@ -490,7 +478,7 @@
                     back2: generateRandomNumbers(1, 2)
                 };
 
-                let wonThisRound = 0;
+                let grossWonThisRound = 0;
                 let winningDetails = [];
 
                 userTickets.forEach(ticket => {
@@ -515,7 +503,7 @@
                     if (wonPrizes.length > 0) {
                         let ticketTotal = 0;
                         wonPrizes.forEach(p => ticketTotal += p.amount);
-                        wonThisRound += ticketTotal;
+                        grossWonThisRound += ticketTotal;
                         winningDetails.push({
                             ticket: ticket,
                             prizes: wonPrizes,
@@ -524,12 +512,16 @@
                     }
                 });
 
+                // คำนวณหักภาษีและค่าธรรมเนียม 1.5%
+                let totalDeduction = grossWonThisRound * TAX_RATE;
+                let netWonThisRound = grossWonThisRound - totalDeduction;
+
                 stats.totalWinningTickets += winningDetails.length;
-                stats.totalWon += wonThisRound;
+                stats.totalWon += netWonThisRound; // สะสมยอดสุทธิที่ได้รับจริง
                 stats.netLottery = stats.totalWon - stats.totalSpent;
                 
                 updateMainStats();
-                renderResults(costThisRound, wonThisRound, winningDetails);
+                renderResults(costThisRound, grossWonThisRound, netWonThisRound, winningDetails);
             }
 
             function updateMainStats() {
@@ -572,33 +564,16 @@
                 } else {
                     vooTotalPlEl.innerHTML = `<span class="text-gray-700 font-bold">0.00%</span>`;
                 }
-
-                // คำนวณ P/L YTD
-                let investedThisYear = investment.principal - investment.yearStartPrincipal;
-                let ytdProfit = investment.value - investment.yearStartValue - investedThisYear;
-                let ytdBase = investment.yearStartValue + investedThisYear;
-                let ytdPercent = ytdBase > 0 ? (ytdProfit / ytdBase) * 100 : 0;
-                let currentYear = Math.ceil(investment.months / 12) || 1;
-                
-                document.getElementById('vooYtdLabel').innerText = `P/L YTD (ปีที่ ${currentYear}):`;
-                const vooYtdEl = document.getElementById('vooYtdVal');
-                if (ytdProfit > 0) {
-                    vooYtdEl.innerHTML = `<span class="text-green-600 font-bold">+฿${Math.round(ytdProfit).toLocaleString()} (+${ytdPercent.toFixed(2)}%)</span>`;
-                } else if (ytdProfit < 0) {
-                    vooYtdEl.innerHTML = `<span class="text-red-600 font-bold">-฿${Math.abs(Math.round(ytdProfit)).toLocaleString()} (${ytdPercent.toFixed(2)}%)</span>`;
-                } else {
-                    vooYtdEl.innerHTML = `<span class="text-gray-500 font-bold">฿0 (0.00%)</span>`;
-                }
                 
                 const boxVoo = document.getElementById('vooBox');
                 if (investment.netVoo > 0) {
                     netVooEl.innerText = `+฿${Math.round(investment.netVoo).toLocaleString()}`;
                     netVooEl.className = "text-xl sm:text-3xl font-black text-green-600";
-                    boxVoo.className = "p-3 sm:p-4 bg-green-50 border-2 border-green-300 rounded-2xl text-center shadow-md relative transition-all duration-300";
+                    boxVoo.className = "p-3 sm:p-4 bg-green-50 border-2 border-green-300 rounded-2xl text-center shadow-md relative transition-all duration-300 flex flex-col justify-between";
                 } else if (investment.netVoo < 0) {
                     netVooEl.innerText = `-฿${Math.abs(Math.round(investment.netVoo)).toLocaleString()}`;
                     netVooEl.className = "text-xl sm:text-3xl font-black text-red-600";
-                    boxVoo.className = "p-3 sm:p-4 bg-red-50 border-2 border-red-300 rounded-2xl text-center shadow-md relative transition-all duration-300";
+                    boxVoo.className = "p-3 sm:p-4 bg-red-50 border-2 border-red-300 rounded-2xl text-center shadow-md relative transition-all duration-300 flex flex-col justify-between";
                 } else {
                     netVooEl.innerText = `฿0`;
                     netVooEl.className = "text-xl sm:text-3xl font-bold text-gray-700";
@@ -620,7 +595,7 @@
                 }
             }
 
-            function renderResults(cost, won, details) {
+            function renderResults(cost, grossWon, netWon, details) {
                 resultsSection.classList.remove('hidden');
                 
                 document.getElementById('res-prize1').innerText = drawResults.prize1[0];
@@ -636,27 +611,46 @@
 
                 // Render สรุปผลหวยของรอบนี้
                 const pBox = document.getElementById('playerResultBox');
-                let net = won - cost;
+                let netProfitThisRound = netWon - cost; // คำนวณจากยอดรับสุทธิ
                 
-                if (won > 0) {
+                if (grossWon > 0) {
                     pBox.className = "mb-6 p-4 rounded-2xl text-center shadow-md border-2 bg-green-50 border-green-400";
                     let detailHTML = details.map(d => {
                         let prizeNames = d.prizes.map(p => p.name).join(', ');
                         return `<div class="text-sm bg-white p-2 rounded mb-1 text-left shadow-sm border border-green-200">
                                     <span class="font-bold text-green-700 tracking-widest">${d.ticket}</span> : 
                                     <span class="text-gray-600">${prizeNames}</span> 
-                                    <span class="float-right font-bold text-green-600">+฿${d.total.toLocaleString()}</span>
+                                    <span class="float-right font-bold text-gray-600">฿${d.total.toLocaleString()}</span>
                                 </div>`;
                     }).join('');
 
                     pBox.innerHTML = `
                         <h3 class="text-xl font-black text-green-700 mb-2">🎉 ยินดีด้วย! งวดนี้คุณถูกรางวัล</h3>
                         <div class="text-sm text-gray-700 mb-2">งวดนี้ซื้อ ${userTickets.length} ใบ จ่ายไป <span class="text-red-500 font-bold">${cost.toLocaleString()} ฿</span></div>
-                        <div class="text-lg font-bold text-green-600 mb-3">รับเงินรางวัลรวม: +${won.toLocaleString()} ฿</div>
+                        
+                        <!-- ใบเสร็จหักภาษี -->
+                        <div class="bg-white rounded-lg p-3 my-3 shadow-sm border border-green-200 w-full max-w-sm mx-auto">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-gray-600 text-sm font-semibold">เงินรางวัลรวม:</span>
+                                <span class="font-bold text-gray-800">${grossWon.toLocaleString()} ฿</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-100">
+                                <span class="text-red-500 text-xs">หักค่าธรรมเนียม/อากรสแตมป์ (1.5%):</span>
+                                <span class="font-bold text-red-500">-${(grossWon - netWon).toLocaleString()} ฿</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-green-700 font-bold text-sm">รับเงินสุทธิ:</span>
+                                <span class="font-black text-green-600 text-lg">+${netWon.toLocaleString()} ฿</span>
+                            </div>
+                        </div>
+
                         <div class="text-xs text-gray-500 mb-1 text-left">รายละเอียดสลากที่ถูกรางวัล:</div>
                         ${detailHTML}
-                        <div class="mt-3 pt-2 border-t border-green-300 font-bold text-base">
-                            กำไรสุทธิรอบนี้: <span class="text-green-700">+${net.toLocaleString()} ฿</span>
+                        <div class="mt-3 pt-2 border-t border-green-300 font-bold text-base flex flex-col gap-1">
+                            <div class="flex justify-center items-center gap-2">
+                                <span>กำไร/ขาดทุนสุทธิรอบนี้:</span> 
+                                <span class="${netProfitThisRound >= 0 ? 'text-green-700' : 'text-red-600'} text-xl">${netProfitThisRound >= 0 ? '+' : ''}${netProfitThisRound.toLocaleString()} ฿</span>
+                            </div>
                         </div>
                     `;
                 } else {
