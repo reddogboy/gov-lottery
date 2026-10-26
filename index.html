@@ -45,30 +45,32 @@
     <div class="w-full max-w-2xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-white">
         
         <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 py-4 px-6 text-center text-white relative">
-            <h1 class="text-2xl sm:text-3xl font-black tracking-wide flex flex-col items-center justify-center gap-1">
-                <span>🎫 จำลองการซื้อสลากกินแบ่งฯ vs การลงทุนในดัชนี S&P 500 (VOO) 💰</span>
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 py-4 px-3 sm:px-6 text-center text-white relative">
+            <h1 class="text-lg sm:text-3xl font-black tracking-wide flex flex-col items-center justify-center gap-1 leading-snug">
+                <span>🎫 จำลองการซื้อสลากกินแบ่งฯ <br class="block sm:hidden">vs การลงทุนในดัชนี S&P 500 (VOO) 💰</span>
             </h1>
-            <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เปลี่ยน "ค่าหวย" เป็น "เงินลงทุน" by Jake the Red Dog @lottery_kitchen</p>
+            <p class="text-blue-100 mt-2 text-xs sm:text-base opacity-90">เปลี่ยน "ค่าหวย" เป็น "เงินลงทุน" by Jake the Red Dog @lottery_kitchen</p>
         </div>
 
         <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด (ใส่ ID ให้เลื่อนจอมาตรงนี้ได้) -->
-        <div id="dashboardSection" class="bg-gray-50 border-b border-gray-200 p-4">
+        <div id="dashboardSection" class="bg-gray-50 border-b border-gray-200 p-3 sm:p-4">
             
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-3 px-1 gap-2">
-                <div class="flex items-center gap-2">
-                    <div class="text-sm font-bold text-gray-700">
-                        📊 สรุปผลผ่านไป: <span id="drawCountVal" class="text-blue-600 font-black text-lg">0</span> งวด
-                        <span id="timeLapsedVal" class="text-xs text-gray-500 font-normal ml-1">(0 เดือน)</span>
-                    </div>
-                    <!-- ปุ่มรีเซ็ต (ด้านบน) -->
-                    <button onclick="resetGame()" class="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-colors shadow-sm border border-red-200 flex items-center gap-1">
-                        🔄 กดตรงนี้เพื่อเริ่มใหม่ทั้งหมด
-                    </button>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+                <!-- ส่วนสถานะข้อความ -->
+                <div class="text-sm sm:text-base font-bold text-gray-700 text-center md:text-left w-full md:w-auto">
+                    📊 สรุปผลผ่านไป: <span id="drawCountVal" class="text-blue-600 font-black text-lg sm:text-xl">0</span> งวด
+                    <span id="timeLapsedVal" class="text-xs text-gray-500 font-normal ml-1 inline-block whitespace-nowrap">(เวลาผ่านไป 0 เดือน)</span>
                 </div>
-                <div class="text-[10px] text-gray-500 bg-gray-200 px-2 py-1 rounded-md text-center leading-tight">
-                    อิงสถิติผลตอบแทน S&P 500 (ปี 2014-2025)<br>
-                    <span class="text-[9px] text-gray-400">*1 เดือน = 2 งวด (วันที่ 1 และ 16)</span>
+                
+                <!-- ส่วนปุ่มและป้ายอธิบาย -->
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                    <button onclick="resetGame()" class="w-full sm:w-auto bg-red-100 text-red-600 hover:bg-red-200 px-4 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors shadow-sm border border-red-200 flex items-center justify-center gap-1">
+                        🔄 กดเพื่อเริ่มใหม่
+                    </button>
+                    <div class="w-full sm:w-auto text-[10px] text-gray-500 bg-gray-200 px-3 py-1.5 rounded-md text-center leading-tight">
+                        อิงสถิติผลตอบแทน S&P 500 (ปี 2014-2025)<br>
+                        <span class="text-[9px] text-gray-400">*1 เดือน = 2 งวด (วันที่ 1 และ 16)</span>
+                    </div>
                 </div>
             </div>
 
@@ -200,7 +202,7 @@
                     <div class="flex items-center justify-between">
                         <span class="font-bold text-gray-700">จำนวนสลากต่องวด:</span>
                         <div class="flex items-center gap-1">
-                            <input type="number" id="tsTickets" value="1" min="1" max="1000" class="w-16 p-1 text-center font-bold text-purple-700 border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500">
+                            <input type="number" id="tsTickets" value="5" min="1" max="1000" class="w-16 p-1 text-center font-bold text-purple-700 border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500">
                             <span class="text-gray-500">ใบ</span>
                         </div>
                     </div>
@@ -241,7 +243,7 @@
             
             <!-- ปุ่มเริ่มใหม่ด้านล่าง -->
             <button onclick="resetGame()" class="w-full mt-6 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm border border-gray-300 flex items-center justify-center gap-2">
-                🔄 กดตรงนี้เพื่อเริ่มใหม่ทั้งหมด
+                🔄 กดเพื่อเริ่มใหม่
             </button>
         </div>
     </div>
