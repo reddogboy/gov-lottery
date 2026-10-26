@@ -39,7 +39,7 @@
         }
     </style>
 </head>
-<body class="p-2 sm:p-4 pb-20 flex flex-col items-center">
+<body class="p-2 sm:p-4 pb-12 flex flex-col items-center">
 
     <!-- Container หลัก -->
     <div class="w-full max-w-2xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-white">
@@ -52,8 +52,8 @@
             <p class="text-blue-100 mt-2 text-sm sm:text-base opacity-90">เปลี่ยน "ค่าหวย" เป็น "เงินลงทุน" by Jake the Red Dog @lottery_kitchen</p>
         </div>
 
-        <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด -->
-        <div class="bg-gray-50 border-b border-gray-200 p-4">
+        <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด (ใส่ ID ให้เลื่อนจอมาตรงนี้ได้) -->
+        <div id="dashboardSection" class="bg-gray-50 border-b border-gray-200 p-4">
             
             <div class="flex flex-col sm:flex-row justify-between items-center mb-3 px-1 gap-2">
                 <div class="flex items-center gap-2">
@@ -61,9 +61,9 @@
                         📊 สรุปผลผ่านไป: <span id="drawCountVal" class="text-blue-600 font-black text-lg">0</span> งวด
                         <span id="timeLapsedVal" class="text-xs text-gray-500 font-normal ml-1">(0 เดือน)</span>
                     </div>
-                    <!-- ปุ่มรีเซ็ต -->
-                    <button onclick="resetGame()" class="bg-red-100 text-red-600 hover:bg-red-200 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold transition-colors shadow-sm border border-red-200 flex items-center gap-1">
-                        🔄 เริ่มใหม่
+                    <!-- ปุ่มรีเซ็ต (ด้านบน) -->
+                    <button onclick="resetGame()" class="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-colors shadow-sm border border-red-200 flex items-center gap-1">
+                        🔄 กดตรงนี้เพื่อเริ่มใหม่ทั้งหมด
                     </button>
                 </div>
                 <div class="text-[10px] text-gray-500 bg-gray-200 px-2 py-1 rounded-md text-center leading-tight">
@@ -189,9 +189,12 @@
 
             <!-- กล่องควบคุมข้ามเวลา (Time Machine) -->
             <div class="w-full mt-6 p-4 bg-gradient-to-b from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl shadow-inner">
-                <h3 class="font-black text-purple-800 mb-3 flex items-center justify-center gap-2 text-lg">
+                <h3 class="font-black text-purple-800 mb-1 flex items-center justify-center gap-2 text-lg">
                     <span>⏳ Time Machine (ข้ามเวลา)</span>
                 </h3>
+                <p class="text-xs sm:text-sm text-purple-600 text-center mb-4">
+                    เบื่อที่จะกดซื้อทีละงวด? จำลองเร่งเวลาไปดูอนาคตได้เลย!
+                </p>
                 
                 <div class="flex flex-col gap-3 mb-4 text-sm bg-white p-3 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
@@ -211,7 +214,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
                     <button onclick="runTimeSkip(1)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">
                         + 1 ปี
                     </button>
@@ -225,8 +228,21 @@
                         + 20 ปี 🚀
                     </button>
                 </div>
+                
+                <!-- ระบุปีเอง -->
+                <div class="flex items-center gap-2 justify-center mt-2 border-t border-purple-200 pt-3">
+                    <span class="text-sm font-bold text-gray-700">ข้ามเวลาแบบระบุเอง:</span>
+                    <input type="number" id="customYears" placeholder="จำนวนปี" min="1" max="100" class="w-24 p-1.5 text-center font-bold text-purple-700 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm">
+                    <button onclick="runCustomTimeSkip()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-4 rounded-lg shadow transition-transform transform hover:scale-105 text-sm">
+                        ไปเลย!
+                    </button>
+                </div>
             </div>
-
+            
+            <!-- ปุ่มเริ่มใหม่ด้านล่าง -->
+            <button onclick="resetGame()" class="w-full mt-6 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm border border-gray-300 flex items-center justify-center gap-2">
+                🔄 กดตรงนี้เพื่อเริ่มใหม่ทั้งหมด
+            </button>
         </div>
     </div>
 
@@ -309,10 +325,18 @@
                 <!-- จะถูกแทรกด้วย JS -->
             </div>
 
-            <button onclick="document.getElementById('timeSkipResultsSection').classList.add('hidden')" class="w-full mt-6 bg-purple-600 hover:bg-purple-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base transform hover:scale-[1.02]">
-                ปิดหน้าต่างนี้และเล่นต่อ
+            <button onclick="closeTimeSkipAndScroll()" class="w-full mt-6 bg-purple-600 hover:bg-purple-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base transform hover:scale-[1.02]">
+                👉🏻 ลองกดตรงนี้เพื่อดูผลลัพธ์ เปรียบเทียบกับการลงทุนใน S&P 500 ดูสิ 👈🏻
             </button>
         </div>
+    </div>
+
+    <!-- Footer สำหรับโปรโมทเว็บไซต์ -->
+    <div class="w-full max-w-2xl mt-6 text-center text-gray-700 text-xs sm:text-sm font-semibold bg-white/70 p-4 rounded-2xl shadow-sm border border-white/50 backdrop-blur-sm">
+        👾 ลองเล่นโปรแกรมจำลองและคำนวณอย่างอื่นได้ที่<br>
+        <a href="https://reddogboy.github.io/lottery-kitchenruay-website/" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline inline-block mt-1.5 transition-colors">
+            https://reddogboy.github.io/lottery-kitchenruay-website/
+        </a>
     </div>
 
     <!-- Script สำหรับเกมสลาก 6 หลัก -->
@@ -383,6 +407,25 @@
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
+
+        // ฟังก์ชันใหม่ ปิดหน้าข้ามเวลาและเลื่อนไปดู Dashboard
+        window.closeTimeSkipAndScroll = function() {
+            document.getElementById('timeSkipResultsSection').classList.add('hidden');
+            document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ฟังก์ชันรับค่าข้ามเวลาแบบพิมพ์เอง
+        window.runCustomTimeSkip = function() {
+            const yrs = parseInt(document.getElementById('customYears').value);
+            if(isNaN(yrs) || yrs <= 0) {
+                alert("กรุณาระบุจำนวนปีที่ถูกต้อง (ต้องมากกว่า 0)");
+                return;
+            }
+            if(yrs > 100) {
+                if(!confirm(`⚠️ คุณกำลังจะข้ามเวลา ${yrs} ปี (เท่ากับประมวลผล ${yrs*24} งวด)\nอาจจะใช้เวลาประมวลผลสักครู่ ต้องการดำเนินการต่อหรือไม่?`)) return;
+            }
+            runTimeSkip(yrs);
+        }
 
         function buildInputs() {
             container.innerHTML = '';
@@ -959,7 +1002,8 @@
                     }
                 }
 
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // เลื่อนจอไปที่ Dashboard
+                document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
             };
 
             const pBox = document.getElementById('playerResultBox');
