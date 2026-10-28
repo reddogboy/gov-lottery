@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>จำลองการซื้อสลากกินแบ่งฯ vs การลงทุนในดัชนี S&P 500</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Chart.js สำหรับทำกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -21,7 +23,7 @@
         input[type="number"] {
             -moz-appearance: textfield;
         }
-        /* อนิเมชันกระดานรางวัล */
+        /* อนิเมชันต่างๆ */
         .fade-in {
             animation: fadeIn 0.5s ease-in-out;
         }
@@ -37,9 +39,17 @@
             70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); }
             100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
         }
+        .pulse-btn {
+            animation: pulseBtn 2s infinite;
+        }
+        @keyframes pulseBtn {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="p-2 sm:p-4 pb-12 flex flex-col items-center">
+<body class="p-2 sm:p-4 pb-20 flex flex-col items-center">
 
     <!-- Container หลัก -->
     <div class="w-full max-w-2xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-white">
@@ -52,20 +62,18 @@
             <p class="text-blue-100 mt-2 text-xs sm:text-base opacity-90">เปลี่ยน "ค่าหวย" เป็น "เงินลงทุน" by Jake the Red Dog @lottery_kitchen</p>
         </div>
 
-        <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด (ใส่ ID ให้เลื่อนจอมาตรงนี้ได้) -->
+        <!-- Dashboard เปรียบเทียบแบบหมัดต่อหมัด -->
         <div id="dashboardSection" class="bg-gray-50 border-b border-gray-200 p-3 sm:p-4">
             
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
-                <!-- ส่วนสถานะข้อความ -->
                 <div class="text-sm sm:text-base font-bold text-gray-700 text-center md:text-left w-full md:w-auto">
                     📊 สรุปผลผ่านไป: <span id="drawCountVal" class="text-blue-600 font-black text-lg sm:text-xl">0</span> งวด
                     <span id="timeLapsedVal" class="text-xs text-gray-500 font-normal ml-1 inline-block whitespace-nowrap">(เวลาผ่านไป 0 เดือน)</span>
                 </div>
                 
-                <!-- ส่วนปุ่มและป้ายอธิบาย -->
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
                     <button onclick="resetGame()" class="w-full sm:w-auto bg-red-100 text-red-600 hover:bg-red-200 px-4 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors shadow-sm border border-red-200 flex items-center justify-center gap-1">
-                        🔄 กดเพื่อเริ่มใหม่
+                        🔄 กดตรงนี้เพื่อเริ่มใหม่ทั้งหมด
                     </button>
                     <div class="w-full sm:w-auto text-[10px] text-gray-500 bg-gray-200 px-3 py-1.5 rounded-md text-center leading-tight">
                         อิงสถิติผลตอบแทน S&P 500 (ปี 2014-2025)<br>
@@ -74,7 +82,6 @@
                 </div>
             </div>
 
-            <!-- กล่องอธิบายกติกาให้ผู้ใช้เข้าใจ -->
             <div class="mb-4 px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs sm:text-sm text-blue-800 shadow-sm flex items-start gap-2">
                 <span class="text-base sm:text-lg">💡</span>
                 <p class="leading-relaxed">
@@ -119,12 +126,11 @@
                 </div>
             </div>
 
-            <!-- แถบประกาศผู้ชนะ -->
             <div id="winnerBanner" class="mt-4 w-full py-2 sm:py-3 bg-gray-100 rounded-xl text-center font-bold text-gray-500 border border-gray-300 text-sm sm:text-base flex items-center justify-center gap-2 transition-all duration-300">
                 เริ่มเสี่ยงโชคเพื่อดูว่าใครจะชนะ!
             </div>
 
-            <!-- กล่องสะท้อนความจริงแบบเรียลไทม์ (Reality Check) โชว์ตลอดเวลา -->
+            <!-- กล่องสะท้อนความจริงแบบเรียลไทม์ (Reality Check) -->
             <div id="realityCheckContainer" class="mt-3">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 shadow-sm text-left relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-5xl opacity-10">🤔</div>
@@ -138,7 +144,7 @@
             </div>
         </div>
 
-        <!-- พื้นที่เลือกเลข และ ข้ามเวลา -->
+        <!-- พื้นที่เลือกเลข -->
         <div class="p-4 sm:p-6 flex flex-col items-center bg-white">
             
             <h2 class="text-lg font-bold text-gray-800 mb-2">ระบุเลขของคุณ</h2>
@@ -151,22 +157,27 @@
                 <div id="digitInputsContainer" class="flex gap-1 sm:gap-2"></div>
             </div>
 
-            <!-- ปุ่มสุ่มและข้อความเตือน -->
             <div id="errorMsg" class="text-red-500 text-xs font-bold h-4 mb-2"></div>
             
+            <!-- กลุ่มปุ่มสุ่มเลขหน้าแผง -->
             <div class="flex flex-wrap justify-center gap-2 mb-4 w-full">
                 <button id="randomAllBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm border border-gray-200 transition-all flex-1 min-w-[120px]">
-                    🎲 สุ่มใหม่ทั้ง 6 หลัก (สุ่มเลขที่ล็อคด้วย)
+                    🎲 สุ่มใหม่ทั้ง 6 หลัก
                 </button>
                 <button id="randomUnlockedBtn" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold py-2 px-4 rounded-xl shadow-sm text-sm border border-purple-200 transition-all flex-1 min-w-[120px]">
                     ✨ สุ่มเฉพาะหลักที่ไม่ได้ล็อค
                 </button>
             </div>
 
-            <!-- ปุ่มเพิ่มสลาก -->
-            <button id="addTicketBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all transform hover:scale-[1.02] text-sm sm:text-base mb-6">
-                + เพิ่มสลากชุดนี้ (80 บาท)
-            </button>
+            <!-- กลุ่มปุ่มเพิ่มลงตะกร้า (เพิ่มปุ่มสุ่มด่วน) -->
+            <div class="flex gap-2 mb-6 w-full flex-col sm:flex-row">
+                <button id="addTicketBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all transform hover:scale-[1.02] text-sm sm:text-base">
+                    + เพิ่ม 1 ใบ (80 ฿)
+                </button>
+                <button id="quickPick5Btn" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all transform hover:scale-[1.02] text-sm sm:text-base flex items-center justify-center gap-2">
+                    ⚡ สุ่มด่วน 5 ใบ
+                </button>
+            </div>
 
             <!-- รถเข็นสลากที่เลือก -->
             <div class="w-full border-t border-gray-200 pt-4 mb-6">
@@ -182,85 +193,74 @@
                 </div>
             </div>
             
-            <!-- ปุ่มออกรางวัล (งวดเดียว) -->
+            <!-- ปุ่มออกรางวัล (งวดเดียว) - ทำให้เด่นสุด -->
             <div class="w-full">
                 <button id="drawBtn" disabled class="w-full bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed text-lg">
                     🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)
                 </button>
             </div>
 
-            <!-- กล่องควบคุมข้ามเวลา (Time Machine) -->
-            <div class="w-full mt-6 p-4 bg-gradient-to-b from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl shadow-inner">
-                <h3 class="font-black text-purple-800 mb-1 flex items-center justify-center gap-2 text-lg">
-                    <span>⏳ Time Machine (ข้ามเวลา)</span>
-                </h3>
-                <p class="text-xs sm:text-sm text-purple-600 text-center mb-4">
-                    เบื่อที่จะกดซื้อทีละงวด? จำลองเร่งเวลาไปดูอนาคตได้เลย!
-                </p>
-                
-                <div class="flex flex-col gap-3 mb-4 text-sm bg-white p-3 rounded-xl shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-gray-700">จำนวนสลากต่องวด:</span>
-                        <div class="flex items-center gap-1">
-                            <input type="number" id="tsTickets" value="5" min="1" max="1000" class="w-16 p-1 text-center font-bold text-purple-700 border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500">
-                            <span class="text-gray-500">ใบ</span>
+            <!-- ซ่อนกล่องข้ามเวลาไว้ใน Accordion เพื่อไม่ให้แย่งซีนปุ่มออกรางวัล -->
+            <div class="w-full mt-6 border-2 border-purple-200 rounded-2xl shadow-sm overflow-hidden bg-white">
+                <button onclick="toggleTimeMachine()" class="w-full bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold py-4 px-4 flex justify-between items-center transition-colors">
+                    <span class="flex items-center gap-2 text-sm sm:text-base">⏳ โหมดข้ามเวลา (Time Machine) สำหรับสายใจร้อน</span>
+                    <span id="tmChevron" class="text-sm">▼</span>
+                </button>
+                <div id="timeMachineContent" class="hidden p-4 bg-gradient-to-b from-purple-50 to-indigo-50 border-t border-purple-100">
+                    <p class="text-xs sm:text-sm text-purple-600 text-center mb-4 font-semibold">
+                        เบื่อที่จะกดซื้อทีละงวด? จำลองเร่งเวลาไปดูอนาคตได้เลย!
+                    </p>
+                    
+                    <div class="flex flex-col gap-3 mb-4 text-sm bg-white p-3 rounded-xl shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-gray-700">จำนวนสลากต่องวด:</span>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="tsTickets" value="5" min="1" max="1000" class="w-16 p-1 text-center font-bold text-purple-700 border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500">
+                                <span class="text-gray-500">ใบ</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1">
+                            <span class="font-bold text-gray-700">รูปแบบเลขที่จะซื้อตลอดทาง:</span>
+                            <select id="tsNumberType" class="p-2 border-2 border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-purple-400 font-semibold text-gray-700">
+                                <option value="random">🎲 สุ่มเลขใหม่ทุกงวด</option>
+                                <option value="cart">🛒 ใช้เลขชุดเดิมในตะกร้า (ต้องมีสลากในตะกร้า)</option>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div class="flex flex-col gap-1">
-                        <span class="font-bold text-gray-700">รูปแบบเลขที่จะซื้อตลอดทาง:</span>
-                        <select id="tsNumberType" class="p-2 border-2 border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-purple-400 font-semibold text-gray-700">
-                            <option value="random">🎲 สุ่มเลขใหม่ทุกงวด</option>
-                            <option value="cart">🛒 ใช้เลขชุดเดิมในตะกร้า (ต้องมีสลากในตะกร้า)</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                    <button onclick="runTimeSkip(1)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">
-                        + 1 ปี
-                    </button>
-                    <button onclick="runTimeSkip(5)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">
-                        + 5 ปี
-                    </button>
-                    <button onclick="runTimeSkip(10)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">
-                        + 10 ปี
-                    </button>
-                    <button onclick="runTimeSkip(20)" class="bg-indigo-800 hover:bg-indigo-900 text-white font-black py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">
-                        + 20 ปี 🚀
-                    </button>
-                </div>
-                
-                <!-- ระบุปีเอง -->
-                <div class="flex items-center gap-2 justify-center mt-2 border-t border-purple-200 pt-3">
-                    <span class="text-sm font-bold text-gray-700">ข้ามเวลาแบบระบุเอง:</span>
-                    <input type="number" id="customYears" placeholder="จำนวนปี" min="1" max="100" class="w-24 p-1.5 text-center font-bold text-purple-700 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm">
-                    <button onclick="runCustomTimeSkip()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-4 rounded-lg shadow transition-transform transform hover:scale-105 text-sm">
-                        ไปเลย!
-                    </button>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                        <button onclick="runTimeSkip(1)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">+ 1 ปี</button>
+                        <button onclick="runTimeSkip(5)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">+ 5 ปี</button>
+                        <button onclick="runTimeSkip(10)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">+ 10 ปี</button>
+                        <button onclick="runTimeSkip(20)" class="bg-indigo-800 hover:bg-indigo-900 text-white font-black py-2 px-1 rounded-xl shadow transition-transform transform hover:scale-105 text-sm">+ 20 ปี 🚀</button>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 justify-center mt-2 border-t border-purple-200 pt-3">
+                        <span class="text-sm font-bold text-gray-700">ข้ามเวลาแบบระบุเอง:</span>
+                        <input type="number" id="customYears" placeholder="จำนวนปี" min="1" max="100" class="w-24 p-1.5 text-center font-bold text-purple-700 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm">
+                        <button onclick="runCustomTimeSkip()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-4 rounded-lg shadow transition-transform transform hover:scale-105 text-sm">
+                            ไปเลย!
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <!-- ปุ่มเริ่มใหม่ด้านล่าง -->
             <button onclick="resetGame()" class="w-full mt-6 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm border border-gray-300 flex items-center justify-center gap-2">
-                🔄 กดเพื่อเริ่มใหม่
+                🔄 กดตรงนี้เพื่อเริ่มใหม่ทั้งหมด
             </button>
         </div>
     </div>
 
-    <!-- ส่วนแสดงผลรางวัลแบบงวดเดียว (ซ่อนไว้ก่อน) -->
+    <!-- ส่วนแสดงผลรางวัลแบบงวดเดียว -->
     <div id="resultsSection" class="hidden w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden mt-4 border-2 border-indigo-200 fade-in">
         <div class="bg-indigo-600 p-4 text-center text-white">
             <h2 class="text-2xl font-black">🎉 ผลการออกรางวัล 🎉</h2>
         </div>
         
         <div class="p-4 sm:p-6 bg-gray-50">
-            <!-- สรุปผลของผู้เล่น -->
-            <div id="playerResultBox" class="mb-6 p-4 rounded-2xl text-center shadow-sm border-2">
-                <!-- จะถูกแทรกด้วย JS -->
-            </div>
+            <div id="playerResultBox" class="mb-6 p-4 rounded-2xl text-center shadow-sm border-2"></div>
 
-            <!-- แสดงเลขที่ออก -->
             <h3 class="font-bold text-gray-700 mb-3 text-lg border-b pb-2">ผลสลากกินแบ่งงวดนี้</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-red-100 text-center">
@@ -288,27 +288,14 @@
                 </div>
             </div>
 
-            <!-- ปุ่มดูรางวัลอื่นๆ -->
             <button id="toggleOtherPrizesBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
                 ดูรางวัลที่ 2, 3, 4, 5
             </button>
             <div id="otherPrizesContainer" class="hidden mt-4 text-xs sm:text-sm">
-                <div class="mb-3">
-                    <strong class="text-gray-700">รางวัลที่ 2 (5 รางวัล):</strong>
-                    <div id="res-prize2" class="text-gray-600 break-words tracking-widest leading-relaxed"></div>
-                </div>
-                <div class="mb-3">
-                    <strong class="text-gray-700">รางวัลที่ 3 (10 รางวัล):</strong>
-                    <div id="res-prize3" class="text-gray-600 break-words tracking-widest leading-relaxed"></div>
-                </div>
-                <div class="mb-3">
-                    <strong class="text-gray-700">รางวัลที่ 4 (50 รางวัล):</strong>
-                    <div id="res-prize4" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs"></div>
-                </div>
-                <div>
-                    <strong class="text-gray-700">รางวัลที่ 5 (100 รางวัล):</strong>
-                    <div id="res-prize5" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs h-32 overflow-y-auto bg-gray-100 p-2 rounded border"></div>
-                </div>
+                <div class="mb-3"><strong class="text-gray-700">รางวัลที่ 2 (5 รางวัล):</strong><div id="res-prize2" class="text-gray-600 break-words tracking-widest leading-relaxed"></div></div>
+                <div class="mb-3"><strong class="text-gray-700">รางวัลที่ 3 (10 รางวัล):</strong><div id="res-prize3" class="text-gray-600 break-words tracking-widest leading-relaxed"></div></div>
+                <div class="mb-3"><strong class="text-gray-700">รางวัลที่ 4 (50 รางวัล):</strong><div id="res-prize4" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs"></div></div>
+                <div><strong class="text-gray-700">รางวัลที่ 5 (100 รางวัล):</strong><div id="res-prize5" class="text-gray-600 break-words tracking-widest leading-relaxed text-[10px] sm:text-xs h-32 overflow-y-auto bg-gray-100 p-2 rounded border"></div></div>
             </div>
 
             <button id="playAgainBtn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base transform hover:scale-[1.02]">
@@ -317,7 +304,7 @@
         </div>
     </div>
 
-    <!-- ส่วนแสดงผลข้ามเวลา (ซ่อนไว้ก่อน) -->
+    <!-- ส่วนแสดงผลข้ามเวลา (มีกราฟและปุ่มแชร์) -->
     <div id="timeSkipResultsSection" class="hidden w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden mt-4 border-4 border-purple-400 fade-in">
         <div class="bg-purple-700 p-4 text-center text-white">
             <h2 class="text-2xl font-black">⏳ สรุปผลการข้ามเวลา ⏳</h2>
@@ -327,8 +314,21 @@
                 <!-- จะถูกแทรกด้วย JS -->
             </div>
 
-            <button onclick="closeTimeSkipAndScroll()" class="w-full mt-6 bg-purple-600 hover:bg-purple-700 text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base transform hover:scale-[1.02]">
-                👉🏻 ลองกดตรงนี้เพื่อดูผลลัพธ์ เปรียบเทียบกับการลงทุนใน S&P 500 ดูสิ 👈🏻
+            <!-- กราฟเปรียบเทียบ -->
+            <div id="tsChartContainer" class="w-full mt-4 bg-white p-3 rounded-xl border border-purple-200 shadow-sm h-64 sm:h-72">
+                <h4 class="font-bold text-gray-700 text-sm mb-2 text-center">📈 กราฟเปรียบเทียบกำไร/ขาดทุนสุทธิ</h4>
+                <div class="relative w-full h-48 sm:h-56">
+                    <canvas id="timeSkipChart"></canvas>
+                </div>
+            </div>
+
+            <!-- ปุ่มแชร์ไวรัล -->
+            <button onclick="shareResult()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm sm:text-base flex items-center justify-center gap-2 transform hover:scale-[1.02]">
+                📤 คัดลอกผลลัพธ์ไปแชร์อวดเพื่อน!
+            </button>
+
+            <button onclick="closeTimeSkipAndScroll()" class="w-full mt-3 bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200 font-bold py-3 px-6 rounded-xl transition-all text-sm sm:text-base">
+                👉🏻 ปิดหน้าต่างนี้ และดูผลลัพธ์ที่กระดานด้านบน 👈🏻
             </button>
         </div>
     </div>
@@ -367,6 +367,12 @@
         const SP500_HISTORICAL_ANNUAL = [0.136, 0.014, 0.120, 0.218, -0.044, 0.315, 0.184, 0.287, -0.181, 0.263, 0.242, 0.155];
         let investment = { draws: 0, principal: 0, value: 0, netVoo: 0, currentBiWeeklyReturn: 0 }; 
 
+        // ตัวแปรสำหรับกราฟ Chart.js
+        let chartLabels = [];
+        let chartLotteryData = [];
+        let chartVooData = [];
+        let timeSkipChartInstance = null;
+
         const container = document.getElementById('digitInputsContainer');
         const addTicketBtn = document.getElementById('addTicketBtn');
         const drawBtn = document.getElementById('drawBtn');
@@ -376,8 +382,21 @@
         
         document.addEventListener("DOMContentLoaded", () => {
             buildInputs();
-            updateRealityCheck(); // เรียกครั้งแรกตอนโหลดหน้าเว็บ
+            updateRealityCheck();
         });
+
+        // เปิด/ปิด กล่อง Time Machine
+        window.toggleTimeMachine = function() {
+            const content = document.getElementById('timeMachineContent');
+            const chevron = document.getElementById('tmChevron');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.innerText = '▲';
+            } else {
+                content.classList.add('hidden');
+                chevron.innerText = '▼';
+            }
+        }
 
         window.resetGame = function() {
             if(!confirm("คุณต้องการล้างข้อมูลและเริ่มเกมใหม่ตั้งแต่ศูนย์ใช่หรือไม่?")) return;
@@ -396,6 +415,7 @@
             drawBtn.disabled = true;
             drawBtn.innerHTML = '🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)';
             addTicketBtn.disabled = false;
+            document.getElementById('quickPick5Btn').disabled = false;
             
             for(let i=0; i<6; i++) {
                 if(!lockedDigits[i]) {
@@ -410,13 +430,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // ฟังก์ชันใหม่ ปิดหน้าข้ามเวลาและเลื่อนไปดู Dashboard
         window.closeTimeSkipAndScroll = function() {
             document.getElementById('timeSkipResultsSection').classList.add('hidden');
             document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // ฟังก์ชันรับค่าข้ามเวลาแบบพิมพ์เอง
         window.runCustomTimeSkip = function() {
             const yrs = parseInt(document.getElementById('customYears').value);
             if(isNaN(yrs) || yrs <= 0) {
@@ -427,6 +445,27 @@
                 if(!confirm(`⚠️ คุณกำลังจะข้ามเวลา ${yrs} ปี (เท่ากับประมวลผล ${yrs*24} งวด)\nอาจจะใช้เวลาประมวลผลสักครู่ ต้องการดำเนินการต่อหรือไม่?`)) return;
             }
             runTimeSkip(yrs);
+        }
+
+        // ระบบแชร์ผลลัพธ์ (คัดลอกข้อความ)
+        window.shareResult = function() {
+            const lottoNet = stats.netLottery;
+            const vooNet = Math.round(investment.netVoo);
+            const totalSpent = stats.totalSpent;
+            const totalWon = stats.totalWon;
+
+            let text = "";
+            if (lottoNet < 0) {
+                text = `ฉันเสียเงินเป็นค่าหวยไป ฿${totalSpent.toLocaleString()} ได้คืนมาแค่ ฿${totalWon.toLocaleString()} (ขาดทุน ฿${Math.abs(lottoNet).toLocaleString()}) 😭\nแต่ถ้าฉันเอาค่าหวยไปลงทุนใน VOO ป่านนี้ฉันจะได้กำไรตั้ง ฿${vooNet.toLocaleString()}! 📈\n\nมาลองดัดหลังตัวเองด้วยเครื่องจำลอง Lottery vs VOO ได้ที่: https://reddogboy.github.io/gov-lottery/`;
+            } else {
+                text = `ดวงคนมันจะรวย! ฉันซื้อหวยไป ฿${totalSpent.toLocaleString()} แต่ถูกรางวัลได้กำไรมา ฿${lottoNet.toLocaleString()}! 🎉\nในขณะที่พอร์ต VOO ทำกำไรได้ ฿${vooNet.toLocaleString()} 📈\n\nมาลองดัดหลังตัวเองด้วยเครื่องจำลอง Lottery vs VOO ได้ที่: https://reddogboy.github.io/gov-lottery/`;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ คัดลอกข้อความสำเร็จ! นำไปวางอวดใน Facebook, X (Twitter) หรือ LINE ได้เลยครับ');
+            }).catch(err => {
+                alert('❌ ไม่สามารถคัดลอกได้: ' + err);
+            });
         }
 
         function buildInputs() {
@@ -519,6 +558,36 @@
             errorMsg.innerText = '';
         };
 
+        // สุ่มด่วน 5 ใบ (อิงตามล็อค)
+        document.getElementById('quickPick5Btn').onclick = () => {
+            if (userTickets.length + 5 > 20) {
+                errorMsg.innerText = '* ซื้อสลากได้สูงสุด 20 ใบต่องวด (หากต้องการเยอะให้ใช้ Time Machine)';
+                return;
+            }
+            for (let i = 0; i < 5; i++) {
+                let num = '';
+                for(let j=0; j<6; j++) {
+                    if(lockedDigits[j]) {
+                        num += document.getElementById(`digit-input-${j}`).value || '0';
+                    } else {
+                        num += Math.floor(Math.random() * 10).toString();
+                    }
+                }
+                userTickets.push(num);
+            }
+            renderCart();
+            updateUI();
+            errorMsg.innerText = '';
+
+            const btn = document.getElementById('quickPick5Btn');
+            btn.innerText = '✔ เพิ่ม 5 ใบแล้ว!';
+            btn.classList.replace('bg-pink-500', 'bg-green-500');
+            setTimeout(() => {
+                btn.innerText = '⚡ สุ่มด่วน 5 ใบ';
+                btn.classList.replace('bg-green-500', 'bg-pink-500');
+            }, 1000);
+        };
+
         addTicketBtn.onclick = () => {
             const num = getCurrentNumber();
             if (!num) {
@@ -526,7 +595,7 @@
                 return;
             }
             if (userTickets.length >= 20) {
-                errorMsg.innerText = '* ซื้อด้วยมือผ่านปุ่มนี้ได้สูงสุด 20 ใบ (หากต้องการเยอะให้ใช้ Time Machine)';
+                errorMsg.innerText = '* ซื้อสลากได้สูงสุด 20 ใบต่องวด (หากต้องการเยอะให้ใช้ Time Machine)';
                 return;
             }
 
@@ -538,7 +607,7 @@
             addTicketBtn.innerText = '✔ เพิ่มเรียบร้อย!';
             setTimeout(() => {
                 addTicketBtn.classList.replace('bg-green-500', 'bg-blue-600');
-                addTicketBtn.innerText = '+ เพิ่มสลากชุดนี้ (80 บาท)';
+                addTicketBtn.innerText = '+ เพิ่ม 1 ใบ (80 ฿)';
             }, 1000);
         };
 
@@ -574,8 +643,10 @@
             
             if (count > 0) {
                 drawBtn.disabled = false;
+                drawBtn.classList.add('pulse-btn'); // เพิ่มเอฟเฟกต์กระพริบดึงดูดใจ
             } else {
                 drawBtn.disabled = true;
+                drawBtn.classList.remove('pulse-btn');
             }
         }
 
@@ -644,8 +715,10 @@
             if(userTickets.length === 0) return;
             
             drawBtn.disabled = true;
+            drawBtn.classList.remove('pulse-btn');
             drawBtn.innerHTML = 'กำลังหมุนวงล้อ... 🎲';
             addTicketBtn.disabled = true;
+            document.getElementById('quickPick5Btn').disabled = true;
             
             const costThisRound = userTickets.length * TICKET_PRICE;
             stats.totalTickets += userTickets.length;
@@ -705,6 +778,7 @@
 
             drawBtn.disabled = true;
             addTicketBtn.disabled = true;
+            document.getElementById('quickPick5Btn').disabled = true;
             document.body.style.cursor = 'wait';
             
             setTimeout(() => {
@@ -712,6 +786,10 @@
                 let tsGrossWon = 0;
                 let tsNetWon = 0;
                 let tsWinCount = 0;
+
+                chartLabels = ['เริ่ม'];
+                chartLotteryData = [stats.netLottery];
+                chartVooData = [investment.netVoo];
 
                 for (let i = 0; i < totalDrawsToSkip; i++) {
                     const costThisRound = actualTicketCount * TICKET_PRICE;
@@ -753,19 +831,91 @@
                         tsNetWon += netWonThisRound;
                         stats.totalWon += netWonThisRound;
                     }
+
+                    stats.netLottery = stats.totalWon - stats.totalSpent;
+
+                    // บันทึกข้อมูลลงกราฟทุกๆ 1 ปี (24 งวด)
+                    if ((i + 1) % 24 === 0) {
+                        chartLabels.push(`+${(i+1)/24} ปี`);
+                        chartLotteryData.push(stats.netLottery);
+                        chartVooData.push(investment.netVoo);
+                    }
                 }
 
                 stats.totalWinningTickets += tsWinCount;
-                stats.netLottery = stats.totalWon - stats.totalSpent;
                 
                 drawBtn.disabled = userTickets.length === 0;
                 addTicketBtn.disabled = false;
+                document.getElementById('quickPick5Btn').disabled = false;
                 document.body.style.cursor = 'default';
 
                 updateMainStats();
                 renderTimeSkipResults(years, totalDrawsToSkip, actualTicketCount, tsSpent, tsGrossWon, tsNetWon, tsWinCount);
             }, 100); 
         };
+
+        // ฟังก์ชันวาดกราฟเปรียบเทียบ
+        function renderTimeSkipChart() {
+            const ctx = document.getElementById('timeSkipChart').getContext('2d');
+            if (timeSkipChartInstance) {
+                timeSkipChartInstance.destroy();
+            }
+            timeSkipChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            label: 'กำไร/ขาดทุน หวย (฿)',
+                            data: chartLotteryData,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'กำไร/ขาดทุน VOO (฿)',
+                            data: chartVooData,
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { labels: { font: { family: 'Prompt' } } },
+                        tooltip: {
+                            titleFont: { family: 'Prompt' },
+                            bodyFont: { family: 'Prompt' },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        label += '฿' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { font: { family: 'Prompt' } } },
+                        y: { ticks: { font: { family: 'Prompt' } } }
+                    }
+                }
+            });
+        }
 
         function getItemEquivalent(amount) {
             if (amount <= 0) return "ความว่างเปล่า 💸";
@@ -795,7 +945,6 @@
             return remainMonths > 0 ? `${years} ปี ${remainMonths} เดือน` : `${years} ปี`;
         }
 
-        // อัปเดต Reality Check แบบเรียลไทม์ตลอดเวลา
         function updateRealityCheck() {
             const contentEl = document.getElementById('realityCheckContent');
             const currentVooValue = investment.value;
@@ -878,6 +1027,8 @@
                 </div>
             `;
 
+            renderTimeSkipChart();
+
             timeSkipResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -951,7 +1102,6 @@
                 }
             }
 
-            // อัปเดตกล่อง Reality Check แบบเรียลไทม์ทุกงวด
             updateRealityCheck();
         }
 
@@ -990,6 +1140,7 @@
                 drawBtn.disabled = true;
                 drawBtn.innerHTML = '🏆 เริ่มออกรางวัล! (จ่าย <span id="drawCostText">0</span> บาท)';
                 addTicketBtn.disabled = false;
+                document.getElementById('quickPick5Btn').disabled = false;
                 
                 renderCart();
                 updateUI();
@@ -1004,7 +1155,6 @@
                     }
                 }
 
-                // เลื่อนจอไปที่ Dashboard
                 document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
             };
 
